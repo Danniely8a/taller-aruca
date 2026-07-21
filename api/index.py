@@ -63,6 +63,11 @@ try:
     def health():
         return jsonify({'status': 'ok', 'message': 'API funcionando correctamente'})
 
+    @app.route('/api/debug-routes', methods=['GET'])
+    def debug_routes():
+        rules = [{'rule': str(r.rule), 'methods': list(r.methods)} for r in app.url_map.iter_rules()]
+        return jsonify(rules)
+
     with app.app_context():
         db.create_all()
         if User.query.count() == 0:
