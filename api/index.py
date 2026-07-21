@@ -6,8 +6,21 @@ backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ba
 sys.path.insert(0, backend_path)
 os.chdir(backend_path)
 
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok'})
+
+@app.route('/api/test-login', methods=['POST'])
+def test_login():
+    from flask import request
+    data = request.get_json()
+    return jsonify({'received': data})
+
 try:
-    from flask import Flask, jsonify, send_from_directory
     from flask_cors import CORS
     from flask_login import LoginManager
     from models.user import db, bcrypt, User
@@ -18,9 +31,6 @@ try:
     )
     from routes.pagos_semanales import pagos_semanales_bp
 
-    basedir = os.path.abspath(os.path.dirname(__file__) if '__file__' in dir() else backend_path)
-
-    app = Flask(__name__)
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-aruca-2026')
 
     database_url = os.getenv('DATABASE_URL')
@@ -33,6 +43,7 @@ try:
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_SECURE'] = True
 
     db.init_app(app)
     bcrypt.init_app(app)
@@ -44,7 +55,7 @@ try:
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
@@ -58,15 +69,6 @@ try:
     app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
     app.register_blueprint(public_order_bp, url_prefix='/ver')
     app.register_blueprint(pagos_semanales_bp, url_prefix='/api/pagos-semanales')
-
-    @app.route('/api/health', methods=['GET'])
-    def health():
-        return jsonify({'status': 'ok', 'message': 'API funcionando correctamente'})
-
-    @app.route('/api/debug-routes', methods=['GET'])
-    def debug_routes():
-        rules = [{'rule': str(r.rule), 'methods': list(r.methods)} for r in app.url_map.iter_rules()]
-        return jsonify(rules)
 
     with app.app_context():
         db.create_all()
@@ -85,11 +87,6 @@ try:
                 db.session.add(user)
             db.session.commit()
 
+    print("OK: Full app loaded successfully")
 except Exception as e:
     traceback.print_exc()
-    from flask import Flask, jsonify
-    app = Flask(__name__)
-
-    @app.route('/api/debug-error', methods=['GET'])
-    def debug_error():
-        return jsonify({'error': str(e)})
