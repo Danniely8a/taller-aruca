@@ -63,6 +63,8 @@ def health():
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
+    if path.startswith('api/') or path.startswith('ver/') or path.startswith('ot/'):
+        return jsonify({'error': 'Not found'}), 404
     if path and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, 'index.html')
