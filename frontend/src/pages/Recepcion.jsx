@@ -3,8 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { workOrders, photos, qr } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import catalogo from '../data/catalogo_afilado.json';
 
 const TIPOS_EQUIPO = ['Compresores', 'Pistolas para clavar', 'Engrapadoras', 'Máquinas pequeñas', 'Máquinas grandes'];
+const TIPOS_SERVICIO = ['Reparación', 'Afilado'];
+
+function obtenerTodosItems() {
+  const items = [];
+  for (const cat of catalogo.categorias) {
+    for (const item of cat.items) {
+      items.push({ categoria: cat.nombre, item });
+    }
+  }
+  return items;
+}
 
 export default function Recepcion() {
   const { user } = useAuth();
@@ -14,9 +26,11 @@ export default function Recepcion() {
   const [ordenCreada, setOrdenCreada] = useState(null);
   const [form, setForm] = useState({
     nombre_cliente: '',
+    cedula_rif: '',
     telefono: '',
     empresa: '',
     correo: '',
+    tipo_servicio: 'Reparación',
     tipo_equipo: 'Compresores',
     marca: '',
     modelo: '',
@@ -25,14 +39,36 @@ export default function Recepcion() {
     prioridad: 'Normal',
   });
 
+  const [busquedaItem, setBusquedaItem] = useState('');
+  const [itemsFiltrados, setItemsFiltrados] = useState([]);
+  const [mostrarLista, setMostrarLista] = useState(false);
+  const [itemsSeleccionados, setItemsSeleccionados] = useState([]);
+  const todosItems = obtenerTodosItems();
+
   const ESTADOS_COLORES = {
     'Recibido': 'badge-info', 'En Diagnóstico': 'badge-warning',
+    'En Diagnóstico / Presupuesto': 'badge-warning',
     'Esperando Presupuesto': 'badge-warning', 'Esperando Aprobación': 'badge-warning',
     'Esperando Repuestos': 'badge-danger', 'En Reparación': 'badge-info',
     'Listo para Entrega': 'badge-success', 'Entregado': 'badge-success',
+    'Devolución por Garantía': 'badge-danger',
   };
 
   useEffect(() => { cargarOrdenes(); }, [busqueda]);
+
+  useEffect(() => {
+    const timer = setInterval(cargarOrdenes, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (busquedaItem.length >= 2) {
+      const q = busquedaItem.toLowerCase();
+      setItemsFiltrados(todosItems.filter(i => i.item.toLowerCase().includes(q) && !itemsSeleccionados.includes(i.item)).slice(0, 20));
+    } else {
+      setItemsFiltrados([]);
+    }
+  }, [busquedaItem]);
 
   const cargarOrdenes = async () => {
     try {
@@ -58,15 +94,18 @@ export default function Recepcion() {
     try {
       const res = await workOrders.recepcion({
         ...form,
+        items_seleccionados: itemsSeleccionados,
         usuario_recepcion: user.id,
       });
       toast.success('Orden creada correctamente');
       setOrdenCreada(res.data);
       setForm({
         nombre_cliente: '',
+        cedula_rif: '',
         telefono: '',
         empresa: '',
         correo: '',
+        tipo_servicio: 'Reparación',
         tipo_equipo: 'Compresores',
         marca: '',
         modelo: '',
@@ -74,6 +113,9 @@ export default function Recepcion() {
         falla_reportada: '',
         prioridad: 'Normal',
       });
+      setItemSeleccionado('');
+      setItemsSeleccionados([]);
+      setBusquedaItem('');
       cargarOrdenes();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al crear la orden');
@@ -111,7 +153,8 @@ export default function Recepcion() {
         <h1>Recepción de Equipos</h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '28px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: user?.rol === 'Técnico' ? '1fr' : 'repeat(auto-fit, minmax(350px, 1fr))', gap: '28px' }}>
+        {user?.rol !== 'Técnico' && (
         <div>
           <div className="card" style={{ borderTop: '4px solid var(--primary)' }}>
             <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--gray-900)', marginBottom: '24px' }}>
@@ -121,8 +164,8 @@ export default function Recepcion() {
               <div className="form-section-title">Datos del Cliente</div>
               <div className="form-row">
                 <div className="form-group">
-                  <label className="label-required">Nombre del Cliente</label>
-                  <input value={form.nombre_cliente} onChange={(e) => updateChange('nombre_cliente', e.target.value)} required />
+                  <label>Cédula / RIF</label>
+                  <input value={form.cedula_rif} onChange={(e) => updateChange('cedula_rif', e.target.value)} placeholder="Ej: V-12345678 o J-12345678-9" />
                 </div>
                 <div className="form-group">
                   <label className="label-required">Teléfono</label>
@@ -131,15 +174,139 @@ export default function Recepcion() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Empresa</label>
-                  <input value={form.empresa} onChange={(e) => updateChange('empresa', e.target.value)} placeholder="Opcional" />
+                  <label className="label-required">Nombre del Cliente / Empresa</label>
+                  <input value={form.nombre_cliente} onChange={(e) => updateChange('nombre_cliente', e.target.value)} required />
                 </div>
                 <div className="form-group">
                   <label>Correo</label>
                   <input type="email" value={form.correo} onChange={(e) => updateChange('correo', e.target.value)} placeholder="Opcional" />
                 </div>
               </div>
+              <div className="form-group">
+                <label>Empresa</label>
+                <input value={form.empresa} onChange={(e) => updateChange('empresa', e.target.value)} placeholder="Opcional" />
+              </div>
 
+              <div className="form-section-title" style={{ marginTop: '20px' }}>Tipo de Servicio</div>
+              <div className="form-group">
+                <label className="label-required">Servicio</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {TIPOS_SERVICIO.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => {
+                        updateChange('tipo_servicio', s);
+                        if (s === 'Reparación') {
+                          setItemSeleccionado('');
+                          setBusquedaItem('');
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: form.tipo_servicio === s ? '2px solid var(--primary)' : '2px solid var(--gray-200)',
+                        background: form.tipo_servicio === s ? 'var(--primary-bg)' : 'var(--white)',
+                        color: form.tipo_servicio === s ? 'var(--primary)' : 'var(--gray-600)',
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {s === 'Reparación' ? '🔧' : '⚙️'} {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {form.tipo_servicio === 'Afilado' && (
+                <div className="form-group" style={{ position: 'relative' }}>
+                  <label className="label-required">Buscar Ítems de Afilado</label>
+                  <input
+                    value={busquedaItem}
+                    onChange={(e) => {
+                      setBusquedaItem(e.target.value);
+                      setMostrarLista(true);
+                    }}
+                    onFocus={() => setMostrarLista(true)}
+                    placeholder="Escriba para buscar... (ej: disco, cuchilla, fresa)"
+                  />
+                      {mostrarLista && itemsFiltrados.length > 0 && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: 0, right: 0,
+                      background: 'white', border: '1px solid var(--gray-200)',
+                      borderRadius: 'var(--radius-sm)', maxHeight: '200px',
+                      overflowY: 'auto', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    }}>
+                      {itemsFiltrados.map((i, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => {
+                            setItemsSeleccionados([...itemsSeleccionados, { item: i.item, cantidad: 1 }]);
+                            setBusquedaItem('');
+                            setMostrarLista(false);
+                          }}
+                          style={{
+                            padding: '10px 12px', cursor: 'pointer',
+                            borderBottom: '1px solid var(--gray-100)',
+                            fontSize: '0.85rem',
+                          }}
+                          onMouseEnter={(e) => e.target.style.background = 'var(--primary-bg)'}
+                          onMouseLeave={(e) => e.target.style.background = 'white'}
+                        >
+                          <span style={{ fontWeight: 500 }}>{i.item}</span>
+                          <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--gray-400)' }}>{i.categoria}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {itemsSeleccionados.length > 0 && (
+                    <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {itemsSeleccionados.map((item, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'var(--primary-bg)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 500 }}>
+                          <span style={{ flex: 1 }}>✓ {item.item}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nuevos = [...itemsSeleccionados];
+                              nuevos[idx].cantidad = Math.max(1, nuevos[idx].cantidad - 1);
+                              setItemsSeleccionados(nuevos);
+                            }}
+                            style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--primary)', background: 'white', color: 'var(--primary)', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >−</button>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.cantidad}
+                            onChange={(e) => {
+                              const nuevaCant = parseInt(e.target.value) || 1;
+                              const nuevos = [...itemsSeleccionados];
+                              nuevos[idx].cantidad = nuevaCant;
+                              setItemsSeleccionados(nuevos);
+                            }}
+                            style={{ width: '55px', padding: '4px 6px', border: '1px solid var(--primary)', borderRadius: '4px', fontSize: '0.9rem', textAlign: 'center', fontWeight: 700 }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nuevos = [...itemsSeleccionados];
+                              nuevos[idx].cantidad = nuevos[idx].cantidad + 1;
+                              setItemsSeleccionados(nuevos);
+                            }}
+                            style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--primary)', background: 'white', color: 'var(--primary)', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >+</button>
+                          <button type="button" onClick={() => setItemsSeleccionados(itemsSeleccionados.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontWeight: 700, fontSize: '1rem' }}>✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {form.tipo_servicio === 'Reparación' && (
+              <>
               <div className="form-section-title" style={{ marginTop: '20px' }}>Datos del Equipo</div>
               <div className="form-group">
                 <label className="label-required">Tipo de Equipo</label>
@@ -162,18 +329,46 @@ export default function Recepcion() {
                   <label>Número de Serie</label>
                   <input value={form.numero_serie} onChange={(e) => updateChange('numero_serie', e.target.value)} />
                 </div>
-                <div className="form-group">
-                  <label className="label-required">Prioridad</label>
-                  <select value={form.prioridad} onChange={(e) => updateChange('prioridad', e.target.value)}>
-                    <option value="Normal">Normal</option>
-                    <option value="Alta">Alta</option>
-                    <option value="Urgente">Urgente</option>
-                  </select>
+              </div>
+              </>
+              )}
+
+              <div className="form-section-title" style={{ marginTop: '20px' }}>Prioridad</div>
+              <div className="form-group">
+                <label className="label-required">Prioridad de la Orden</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {['Normal', 'Alta', 'Urgente'].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => updateChange('prioridad', p)}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: form.prioridad === p
+                          ? `2px solid ${p === 'Urgente' ? '#DC2626' : p === 'Alta' ? '#D97706' : 'var(--primary)'}`
+                          : '2px solid var(--gray-200)',
+                        background: form.prioridad === p
+                          ? `${p === 'Urgente' ? '#FEE2E2' : p === 'Alta' ? '#FEF3C7' : 'var(--primary-bg)'}`
+                          : 'var(--white)',
+                        color: form.prioridad === p
+                          ? `${p === 'Urgente' ? '#DC2626' : p === 'Alta' ? '#D97706' : 'var(--primary)'}`
+                          : 'var(--gray-600)',
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {p === 'Normal' ? '📋' : p === 'Alta' ? '⚠️' : '🔴'} {p}
+                    </button>
+                  ))}
                 </div>
               </div>
               <div className="form-group">
-                <label>Falla Reportada</label>
-                <textarea value={form.falla_reportada} onChange={(e) => updateChange('falla_reportada', e.target.value)} placeholder="Describe el problema del equipo..." />
+                <label>Requerimiento del Cliente</label>
+                <textarea value={form.falla_reportada} onChange={(e) => updateChange('falla_reportada', e.target.value)} placeholder="Describa lo que el cliente necesita..." />
               </div>
 
               <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '8px' }}>
@@ -209,6 +404,7 @@ export default function Recepcion() {
             </div>
           )}
         </div>
+        )}
 
         <div>
           <div className="card">
@@ -246,7 +442,7 @@ export default function Recepcion() {
                           <div style={{ fontWeight: 500 }}>{o.cliente?.nombre}</div>
                           {o.cliente?.empresa && <small style={{ color: 'var(--gray-400)' }}>{o.cliente.empresa}</small>}
                         </td>
-                        <td><small>{o.equipo?.tipo_equipo} - {o.equipo?.marca}</small></td>
+                        <td><small>{o.tipo_servicio || 'Reparación'} - {o.equipo?.tipo_equipo} - {o.equipo?.marca}</small></td>
                         <td><span className={`badge ${ESTADOS_COLORES[o.estado]}`}>{o.estado}</span></td>
                         <td>
                           <Link to={`/ordenes/${o.id}`} className="btn btn-primary btn-sm">Ver</Link>

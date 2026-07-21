@@ -8,8 +8,10 @@ from flask_login import LoginManager
 from models.user import db, bcrypt, User
 from routes import (
     auth_bp, users_bp, clients_bp, equipments_bp,
-    work_orders_bp, photos_bp, status_history_bp, qr_bp
+    work_orders_bp, photos_bp, status_history_bp, qr_bp, payments_bp, notifications_bp,
+    public_order_bp
 )
+from routes.pagos_semanales import pagos_semanales_bp
 
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
@@ -43,6 +45,10 @@ app.register_blueprint(work_orders_bp, url_prefix='/api/work-orders')
 app.register_blueprint(photos_bp, url_prefix='/api/photos')
 app.register_blueprint(status_history_bp, url_prefix='/api/status-history')
 app.register_blueprint(qr_bp, url_prefix='/api/qr')
+app.register_blueprint(payments_bp, url_prefix='/api/payments')
+app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
+app.register_blueprint(public_order_bp, url_prefix='/ver')
+app.register_blueprint(pagos_semanales_bp, url_prefix='/api/pagos-semanales')
 
 @app.route('/api/health', methods=['GET'])
 def health():
@@ -62,6 +68,8 @@ def seed_initial_data():
             {'nombre': 'Eduardo Reinosa', 'correo': 'eduardo@aruca.com', 'rol': 'Técnico'},
             {'nombre': 'Hernán Rojas', 'correo': 'hernan@aruca.com', 'rol': 'Supervisor'},
             {'nombre': 'Daniely Ochoa', 'correo': 'daniely@aruca.com', 'rol': 'Recepción / Ventas'},
+            {'nombre': 'Carlos Perez', 'correo': 'carlos@gmail.com', 'rol': 'Técnico'},
+            {'nombre': 'Genesis', 'correo': 'genesis@aruca.com', 'rol': 'Pagos'},
         ]
         for u in usuarios:
             user = User(nombre=u['nombre'], correo=u['correo'], rol=u['rol'])
@@ -74,4 +82,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         seed_initial_data()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=8080)

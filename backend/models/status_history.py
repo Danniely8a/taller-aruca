@@ -1,5 +1,5 @@
 from .user import db
-from datetime import datetime
+from utils import now_ve
 
 
 class StatusHistory(db.Model):
@@ -10,7 +10,7 @@ class StatusHistory(db.Model):
     estado_anterior = db.Column(db.String(50), nullable=True)
     nuevo_estado = db.Column(db.String(50), nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    fecha_cambio = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_cambio = db.Column(db.DateTime, default=now_ve)
 
     user = db.relationship('User', backref='status_changes')
 

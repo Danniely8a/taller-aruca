@@ -8,3 +8,9 @@ dist/
 uploads/
 *.log
 .DS_Store
+cloudflared_error.txt
+cloudflared_output.txt
+cookie.txt
+frontend/vite_log.txt
+frontend/public/sw-cleanup.js
+frontend/src/hooks/useAutoRefresh.js

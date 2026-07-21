@@ -17,7 +17,7 @@ def get_equipment(id):
     return jsonify(equip.to_dict())
 
 @equipments_bp.route('/', methods=['POST'])
-@role_required('Recepción / Ventas')
+@role_required('Gerente General', 'Recepción / Ventas')
 def create_equipment():
     data = request.get_json()
     equip = Equipment(
@@ -32,7 +32,7 @@ def create_equipment():
     return jsonify(equip.to_dict()), 201
 
 @equipments_bp.route('/<int:id>', methods=['PUT'])
-@role_required('Recepción / Ventas')
+@role_required('Gerente General', 'Recepción / Ventas')
 def update_equipment(id):
     equip = Equipment.query.get_or_404(id)
     data = request.get_json()

@@ -8,7 +8,7 @@ export default function Clientes() {
   const [lista, setLista] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ nombre: '', telefono: '', empresa: '', correo: '' });
+  const [form, setForm] = useState({ cedula_rif: '', nombre: '', telefono: '', empresa: '', correo: '' });
 
   useEffect(() => { load(); }, []);
 
@@ -22,11 +22,11 @@ export default function Clientes() {
     try {
       if (editing) { await clients.update(editing.id, form); toast.success('Cliente actualizado'); }
       else { await clients.create(form); toast.success('Cliente creado'); }
-      setShowModal(false); setForm({ nombre: '', telefono: '', empresa: '', correo: '' }); setEditing(null); load();
+      setShowModal(false); setForm({ cedula_rif: '', nombre: '', telefono: '', empresa: '', correo: '' }); setEditing(null); load();
     } catch (err) { toast.error(err.response?.data?.error || 'Error al guardar'); }
   };
 
-  const handleEdit = (c) => { setEditing(c); setForm({ nombre: c.nombre, telefono: c.telefono, empresa: c.empresa || '', correo: c.correo || '' }); setShowModal(true); };
+  const handleEdit = (c) => { setEditing(c); setForm({ cedula_rif: c.cedula_rif || '', nombre: c.nombre, telefono: c.telefono, empresa: c.empresa || '', correo: c.correo || '' }); setShowModal(true); };
 
   const handleDelete = async (id) => {
     if (!confirm('¿Eliminar este cliente?')) return;
@@ -38,7 +38,7 @@ export default function Clientes() {
     <div>
       <div className="top-bar with-actions">
         <h1>Clientes</h1>
-        <button className="btn btn-primary" onClick={() => { setEditing(null); setForm({ nombre: '', telefono: '', empresa: '', correo: '' }); setShowModal(true); }}>
+        <button className="btn btn-primary" onClick={() => { setEditing(null); setForm({ cedula_rif: '', nombre: '', telefono: '', empresa: '', correo: '' }); setShowModal(true); }}>
           + Nuevo Cliente
         </button>
       </div>
@@ -46,12 +46,12 @@ export default function Clientes() {
       <div className="card">
         <table className="table">
           <thead>
-            <tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Empresa</th><th>Correo</th><th>Registro</th><th></th></tr>
+            <tr><th>ID</th><th>Cédula/RIF</th><th>Nombre</th><th>Teléfono</th><th>Empresa</th><th>Correo</th><th>Registro</th><th></th></tr>
           </thead>
           <tbody>
             {lista.map((c) => (
               <tr key={c.id}>
-                <td>{c.id}</td><td style={{ fontWeight: 500 }}>{c.nombre}</td><td>{c.telefono}</td><td>{c.empresa || '-'}</td><td>{c.correo || '-'}</td>
+                <td>{c.id}</td><td>{c.cedula_rif || '-'}</td><td style={{ fontWeight: 500 }}>{c.nombre}</td><td>{c.telefono}</td><td>{c.empresa || '-'}</td><td>{c.correo || '-'}</td>
                 <td>{new Date(c.fecha_registro).toLocaleDateString()}</td>
                 <td>
                   <button className="btn btn-primary btn-sm" onClick={() => handleEdit(c)}>Editar</button>{' '}
@@ -68,6 +68,10 @@ export default function Clientes() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>{editing ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
             <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Cédula / RIF</label>
+                <input value={form.cedula_rif} onChange={(e) => setForm({ ...form, cedula_rif: e.target.value })} placeholder="Ej: V-12345678 o J-12345678-9" />
+              </div>
               <div className="form-group">
                 <label className="label-required">Nombre Completo</label>
                 <input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />

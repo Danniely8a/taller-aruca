@@ -17,10 +17,11 @@ def get_client(id):
     return jsonify(client.to_dict())
 
 @clients_bp.route('/', methods=['POST'])
-@role_required('Recepción / Ventas')
+@role_required('Gerente General', 'Recepción / Ventas')
 def create_client():
     data = request.get_json()
     client = Client(
+        cedula_rif=data.get('cedula_rif', ''),
         nombre=data['nombre'],
         telefono=data['telefono'],
         empresa=data.get('empresa', ''),
@@ -31,10 +32,11 @@ def create_client():
     return jsonify(client.to_dict()), 201
 
 @clients_bp.route('/<int:id>', methods=['PUT'])
-@role_required('Recepción / Ventas')
+@role_required('Gerente General', 'Recepción / Ventas')
 def update_client(id):
     client = Client.query.get_or_404(id)
     data = request.get_json()
+    client.cedula_rif = data.get('cedula_rif', client.cedula_rif)
     client.nombre = data.get('nombre', client.nombre)
     client.telefono = data.get('telefono', client.telefono)
     client.empresa = data.get('empresa', client.empresa)

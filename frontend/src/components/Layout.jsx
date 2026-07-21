@@ -2,25 +2,41 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import InstallButton from './InstallButton';
+import NotificationBell from './NotificationBell';
 
 const ALL_MENU_ITEMS = [
-  { path: '/', label: 'Recepción', icon: '📥' },
-  { path: '/dashboard', label: 'Inicio', icon: '📊' },
-  { path: '/escaner', label: 'Escanear', icon: '📷' },
-  { path: '/ordenes', label: 'Órdenes', icon: '📋' },
+  { path: '/', label: 'Recepción', icon: '📥', roles: ['Gerente General', 'Supervisor', 'Recepción / Ventas'] },
+  { path: '/dashboard', label: 'Inicio', icon: '📊', roles: ['Gerente General', 'Supervisor', 'Recepción / Ventas', 'Técnico'] },
+  { path: '/escaner', label: 'Escanear', icon: '📷', roles: ['Gerente General', 'Supervisor', 'Recepción / Ventas', 'Técnico'] },
+  { path: '/ordenes', label: 'Órdenes', icon: '📋', roles: ['Gerente General', 'Supervisor', 'Recepción / Ventas', 'Técnico'] },
+  { path: '/mis-ordenes', label: 'Mis Órdenes', icon: '⚙️', roles: ['Técnico'] },
 ];
+
+const MENU_OCULTO_CARLOS = ['/', '/dashboard', '/escaner', '/ordenes'];
+const MENU_OCULTO_EDUARDO = ['/ordenes'];
+
+const MENU_GENESIS = ['/genesis', '/pagos'];
 
 const EXTRAS_MENU = {
   'Gerente General': [
     { path: '/usuarios', label: 'Usuarios', icon: '👥' },
     { path: '/clientes', label: 'Clientes', icon: '👤' },
     { path: '/equipos', label: 'Equipos', icon: '🔧' },
+    { path: '/pagos', label: 'Pagos', icon: '💰' },
   ],
-  'Supervisor': [],
-  'Técnico': [],
+  'Supervisor': [
+    { path: '/pagos', label: 'Pagos', icon: '💰' },
+  ],
+  'Técnico': [
+    { path: '/pagos', label: 'Pagos', icon: '💰' },
+  ],
   'Recepción / Ventas': [
     { path: '/clientes', label: 'Clientes', icon: '👤' },
     { path: '/equipos', label: 'Equipos', icon: '🔧' },
+  ],
+  'Pagos': [
+    { path: '/genesis', label: 'Órdenes e Ítems', icon: '📋' },
+    { path: '/pagos', label: 'Pagos', icon: '💰' },
   ],
 };
 
@@ -50,7 +66,13 @@ export default function Layout() {
           <h2>Sistema de Recepción</h2>
         </div>
         <nav>
-          {[...ALL_MENU_ITEMS, ...extraItems].map((item) => (
+          {[...ALL_MENU_ITEMS, ...extraItems]
+            .filter(item => !item.roles || item.roles.includes(user?.rol))
+            .filter(item => !(user?.correo === 'carlos@gmail.com' && MENU_OCULTO_CARLOS.includes(item.path)))
+            .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && MENU_OCULTO_EDUARDO.includes(item.path)))
+            .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && item.path === '/pagos'))
+            .filter(item => !(user?.rol === 'Pagos' && !MENU_GENESIS.includes(item.path)))
+            .map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -65,12 +87,15 @@ export default function Layout() {
         </nav>
         <div className="sidebar-footer">
           <InstallButton />
-          <div className="sidebar-user">
-            <div className="sidebar-avatar">{getInitials(user?.nombre)}</div>
-            <div className="sidebar-user-info">
-              <div className="name">{user?.nombre}</div>
-              <div className="role">{user?.rol}</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+            <div className="sidebar-user" style={{ flex: 1 }}>
+              <div className="sidebar-avatar">{getInitials(user?.nombre)}</div>
+              <div className="sidebar-user-info">
+                <div className="name">{user?.nombre}</div>
+                <div className="role">{user?.rol}</div>
+              </div>
             </div>
+            <NotificationBell />
           </div>
           <button onClick={handleLogout} className="btn-logout">
             Cerrar Sesión
@@ -83,7 +108,11 @@ export default function Layout() {
       </main>
 
       <nav className="mobile-bottom-nav">
-        {ALL_MENU_ITEMS.map((item) => (
+        {ALL_MENU_ITEMS
+          .filter(item => !item.roles || item.roles.includes(user?.rol))
+          .filter(item => !(user?.correo === 'carlos@gmail.com' && MENU_OCULTO_CARLOS.includes(item.path)))
+          .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && MENU_OCULTO_EDUARDO.includes(item.path)))
+          .map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

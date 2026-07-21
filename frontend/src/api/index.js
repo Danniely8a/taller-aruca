@@ -8,7 +8,7 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/me')) {
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -47,10 +47,15 @@ export const equipments = {
 export const workOrders = {
   getAll: (params) => api.get('/work-orders/', { params }),
   getOne: (id) => api.get(`/work-orders/${id}`),
+  getMisOrdenes: () => api.get('/work-orders/mis-ordenes'),
+  getOrdenesItems: () => api.get('/work-orders/ordenes-items'),
   create: (data) => api.post('/work-orders/', data),
   recepcion: (data) => api.post('/work-orders/recepcion', data),
   update: (id, data) => api.put(`/work-orders/${id}`, data),
   updateEstado: (id, data) => api.put(`/work-orders/${id}/estado`, data),
+  updateNotas: (id, data) => api.put(`/work-orders/${id}/notas`, data),
+  updateItemsListos: (id, data) => api.put(`/work-orders/${id}/items-listos`, data),
+  updateItemsValidados: (id, data) => api.put(`/work-orders/${id}/items-validados`, data),
   getEstados: () => api.get('/work-orders/estados'),
 };
 
@@ -83,6 +88,27 @@ export const qr = {
     a.remove();
     window.URL.revokeObjectURL(url);
   },
+};
+
+export const payments = {
+  getByOrder: (orderId) => api.get(`/payments/${orderId}`),
+  create: (orderId, formData) => api.post(`/payments/${orderId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  delete: (paymentId) => api.delete(`/payments/${paymentId}`),
+};
+
+export const notifications = {
+  getAll: () => api.get('/notifications/'),
+  markAllRead: () => api.put('/notifications/read-all'),
+  markRead: (id) => api.put(`/notifications/${id}/read`),
+};
+
+export const pagosSemanales = {
+  getAll: () => api.get('/pagos-semanales/'),
+  generar: (data) => api.post('/pagos-semanales/generar', data),
+  validar: (id, data) => api.put(`/pagos-semanales/${id}/validar`, data),
+  delete: (id) => api.delete(`/pagos-semanales/${id}`),
 };
 
 export default api;

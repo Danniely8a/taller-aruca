@@ -15,18 +15,25 @@ export default function Ordenes() {
   const [form, setForm] = useState({ cliente_id: '', equipo_id: '', prioridad: 'Normal', falla_reportada: '' });
 
   const ESTADOS = [
-    'Recibido', 'En Diagnóstico', 'Esperando Presupuesto', 'Esperando Aprobación',
+    'Recibido', 'En Diagnóstico', 'En Diagnóstico / Presupuesto', 'Esperando Presupuesto', 'Esperando Aprobación',
     'Esperando Repuestos', 'En Reparación', 'Listo para Entrega', 'Entregado'
   ];
 
   const ESTADOS_COLORES = {
     'Recibido': 'badge-info', 'En Diagnóstico': 'badge-warning',
+    'En Diagnóstico / Presupuesto': 'badge-warning',
     'Esperando Presupuesto': 'badge-warning', 'Esperando Aprobación': 'badge-warning',
     'Esperando Repuestos': 'badge-danger', 'En Reparación': 'badge-info',
     'Listo para Entrega': 'badge-success', 'Entregado': 'badge-success',
+    'Devolución por Garantía': 'badge-danger',
   };
 
   useEffect(() => { load(); loadClientes(); loadEquipos(); }, [filtroEstado]);
+
+  useEffect(() => {
+    const timer = setInterval(() => { load(); loadClientes(); loadEquipos(); }, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const load = async () => {
     try {
@@ -86,7 +93,31 @@ export default function Ordenes() {
       </div>
 
       <div className="card" style={{ marginBottom: '20px' }}>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            onClick={() => setFiltroEstado(filtroEstado === 'Listo para Entrega' ? '' : 'Listo para Entrega')}
+            style={{
+              padding: '10px 20px',
+              borderRadius: '10px',
+              border: filtroEstado === 'Listo para Entrega' ? '2px solid #059669' : '2px solid #E5E7EB',
+              background: filtroEstado === 'Listo para Entrega' ? '#D1FAE5' : 'white',
+              color: filtroEstado === 'Listo para Entrega' ? '#059669' : '#6B7280',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            📦 Listos para Entregar
+            {filtroEstado === 'Listo para Entrega' && (
+              <span style={{ background: '#059669', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem' }}>
+                {ordenes.length}
+              </span>
+            )}
+          </button>
           <div style={{ flex: 1, minWidth: '200px' }}>
             <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} style={{ padding: '10px 14px', border: '1.5px solid #e2e8f0', borderRadius: '6px', fontFamily: 'Inter', width: '100%' }}>
               <option value="">Todos los estados</option>
@@ -165,8 +196,8 @@ export default function Ordenes() {
                 </select>
               </div>
               <div className="form-group">
-                <label>Falla Reportada</label>
-                <textarea value={form.falla_reportada} onChange={(e) => setForm({ ...form, falla_reportada: e.target.value })} placeholder="Describa la falla del equipo..." />
+                <label>Requerimiento del Cliente</label>
+                <textarea value={form.falla_reportada} onChange={(e) => setForm({ ...form, falla_reportada: e.target.value })} placeholder="Describa lo que el cliente necesita..." />
               </div>
               <div className="modal-actions">
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Cancelar</button>

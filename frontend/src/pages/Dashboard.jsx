@@ -8,6 +8,11 @@ export default function Dashboard() {
 
   useEffect(() => { loadStats(); }, []);
 
+  useEffect(() => {
+    const timer = setInterval(loadStats, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
   const loadStats = async () => {
     try {
       const res = await workOrders.getAll();
@@ -25,12 +30,14 @@ export default function Dashboard() {
   const ESTADOS_COLORES = {
     'Recibido': 'badge-info',
     'En Diagnóstico': 'badge-warning',
+    'En Diagnóstico / Presupuesto': 'badge-warning',
     'Esperando Presupuesto': 'badge-warning',
     'Esperando Aprobación': 'badge-warning',
     'Esperando Repuestos': 'badge-danger',
     'En Reparación': 'badge-info',
     'Listo para Entrega': 'badge-success',
     'Entregado': 'badge-success',
+    'Devolución por Garantía': 'badge-danger',
   };
 
   return (

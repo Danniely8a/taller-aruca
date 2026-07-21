@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import UserMixin
-from datetime import datetime
+from utils import now_ve
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
     rol = db.Column(db.String(50), nullable=False)
     permisos = db.Column(db.Text, nullable=True)
     activo = db.Column(db.Boolean, default=True)
-    fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_registro = db.Column(db.DateTime, default=now_ve)
 
     def set_password(self, password):
         self.contrasena = bcrypt.generate_password_hash(password).decode('utf-8')

@@ -1,0 +1,257 @@
+{
+  "categorias": [
+    {
+      "nombre": "Cintas",
+      "items": [
+        "SOLDAR CINTA BLANCA O TEMPLADA HASTA 1\"",
+        "SOLDAR CINTA BLANCA O TEMPLADA MAYOR 1\"",
+        "ETA HASTA 30 MM",
+        "ETA HASTA 50 MM",
+        "CORTAR Y SOLDAR (CARNICERIA)",
+        "SOLDAR CINTA BIMETALICA"
+      ]
+    },
+    {
+      "nombre": "Mechas",
+      "items": [
+        "AF. MECHAS DE PALA Y ACERO",
+        "AF. MECHA HSS HASTA 13 MM",
+        "AF. MECHA RECTA HASTA 20 MM",
+        "AF. MECHA RECTA HASTA 20 MM Z3",
+        "AF. MECHA RECTA MAYOR A 20 MM",
+        "AF. MECHAS DE ESCOPLO",
+        "AF. MECHA HONGO HASTA 30 MM",
+        "AF. MECHA HONGO HASTA 50 MM",
+        "AF. MECHA HONGO MAYOR A 50 MM",
+        "AF. MECHA DE TALADRO MULTIPLE",
+        "AF. MECHA O FRESA PARA TARUGOS",
+        "AF. GUBIAS PARA TORNO (RECTIFICADO X 2)",
+        "AF. CUCHILLAS PARA CEPILLOS MANUALES",
+        "RUEDAS PARA CORTATRINCHAS",
+        "FORJAR SERRuchos, CUCHILLOS, MACHETE",
+        "AF. MECHAS RECTAS HASTA 20 MM"
+      ]
+    },
+    {
+      "nombre": "Cuchillas",
+      "items": [
+        "AF. CUCHILLA RECTA HASTA 1500 MM DE LARGO",
+        "AF. CUCHILLA RECTA HASTA 500 MM DE LARGO",
+        "AF. CUCHILLA RECTA HASTA 600 MM DE LARGO",
+        "AF. JUEGO DE CUCHILLAS MAQUITA EN HSS",
+        "AF. JUEGO DE CUCHILLAS MAQUITA EN HM",
+        "SERV. CORTE DE CUCHILLAS",
+        "AF. CUCHILLAS EN HM AL CM",
+        "AF. JUEGO DE CUCHILLA (RECTA Y CURVA)",
+        "IMPRENTA HASTA 1.15 METROS",
+        "AF. IMPRENTA HASTA 1.50 METROS",
+        "AF. TRILATERALES PO",
+        "AF. CUCHILLAS HASTA 800MM DE LARGO",
+        "AF. CUCHILLAS HASTA 900MM DE LARGO",
+        "REC. CUCHILLAS HASTA 600 MM DE LARGO",
+        "REC. CUCHILLAS HASTA 700 MM DE LARGO",
+        "REC. CUCHILLAS HASTA 800 MM DE LARGO",
+        "AF. DISCO REBANADORA CUCHILLA MOLINO 12",
+        "AF. DISCO REBANADORA CUCHILLA MOLINO 22",
+        "AF. DISCO REBANADORA CUCHILLA MOLINO 32",
+        "AF. DISCO REBANADORA CUCHILLA MOLINO 42",
+        "AF. DISCO REBANADORA DISCO ROTATIVO DE 12",
+        "AF. DISCO REBANADORA DISCO ROTATIVO DE 22",
+        "AF. DISCO REBANADORA DISCO ROTATIVO DE 32",
+        "AF. DISCO REBANADORA DISCO ROTATIVO DE 42",
+        "AF. DISCO REBANADORA DISCO ROTATIVO HASTA 350M",
+        "AF. DISCO REBANADORA DISCO ROTATIVOMAYOR 350M",
+        "CORTAR CUCHILLA",
+        "CUCHILLO MAYOR A 20 MM"
+      ]
+    },
+    {
+      "nombre": "Discos HSS",
+      "items": [
+        "AF. DISCOS EN HSS HASTA 250 MM",
+        "AF. DISCOS EN HSS HASTA 300 MM",
+        "AF. DISCOS EN HSS HASTA 350 MM",
+        "AF. DISCOS EN HSS HASTA 400 MM",
+        "AF. DISCOS EN HSS HASTA 450 MM",
+        "AF. DISCOS EN HSS HASTA 500 MM",
+        "AF. DISCOS EN HSS HASTA 550 MM",
+        "AF. DISCOS EN HSS HASTA 600 MM",
+        "REC. DISCOS EN HSS HASTA 250 MM",
+        "REC. DISCOS EN HSS HASTA 300 MM",
+        "REC. DISCOS EN HSS HASTA 350 MM",
+        "REC. DISCOS EN HSS HASTA 400 MM",
+        "REC. DISCOS EN HSS HASTA 450 MM",
+        "REC. DISCOS EN HSS HASTA 500 MM",
+        "REC. DISCOS EN HSS HASTA 550 MM",
+        "REC. DISCOS EN HSS HASTA 600 MM"
+      ]
+    },
+    {
+      "nombre": "Discos Cromo",
+      "items": [
+        "AF. DISCO DE CROMO V. HASTA 200 MM",
+        "AF. DISCO DE CROMO V. HASTA 250 MM",
+        "AF. DISCO DE CROMO V. HASTA 300 MM",
+        "AF. DISCO DE CROMO V. HASTA 350 MM",
+        "AF. DISCO DE CROMO V. HASTA 400 MM",
+        "AF. DISCO DE CROMO V. HASTA 450 MM"
+      ]
+    },
+    {
+      "nombre": "Fresas",
+      "items": [
+        "AF. FRESA CORTE RECTO 24 Y 26 10 MM",
+        "AF. FRESA CORTE RECTO 24 Y 26 13 MM",
+        "AF. FRESA CORTE RECTO 24 Y 26 16 MM",
+        "AF. FRESA CORTE RECTO 24 Y 26 20 MM",
+        "AF. FRESA CORTE RECTO 24 Y 26 35 MM",
+        "AF. FRESA CORTE RECTO 24 Y 26 40 MM",
+        "AF. FRESA CORTE RECTO 28 A 6 MM",
+        "AF. FRESA CORTE RECTO 28 A 12 MM",
+        "AF. FRESA CORTE RECTO 28 A 16 MM",
+        "AF. FRESA CORTE RECTO 28 A 20 MM",
+        "AF. FRESA CORTE RECTO 28 A 35 MM",
+        "AF. FRESA CORTE RECTO 28 A 40 MM",
+        "AF. FRESA CORTE RECTO 28 A 80 MM",
+        "AF. FRESA CORTE RECTO 28 A 100 MM",
+        "AF. FRESA CORTE RECTO 212 A 43 MM",
+        "AF. FRESA CORTE RECTO 212 A 12 MM",
+        "AF. FRESA CORTE RECTO 212 A 13 MM",
+        "AF. FRESA CORTE RECTO 212 A 16 MM",
+        "AF. FRESA CORTE RECTO 212 A 20 MM",
+        "AF. FRESA CORTE RECTO 212 A 25 MM",
+        "AF. FRESA CORTE RECTO 212 A 40 MM",
+        "AF. FRESA CORTE RECTO 212 A 100 MM",
+        "AF. FRESA DE MOLDURA 20 MM",
+        "AF. FRESA DE MOLDURA 25 MM",
+        "AF. FRESA DE MOLDURA 30 MM",
+        "AF. FRESA DE MOLDURA 35 MM",
+        "AF. FRESA DE MOLDURA 40 MM",
+        "AF. FRESA DE MOLDURA 45 MM",
+        "AF. FRESA DE MOLDURA 50 MM",
+        "AF. FRESA DE MOLDURA 60 MM",
+        "AF. FRESA DE MOLDURA 70 MM",
+        "AF. FRESA DE MOLDURA 80 MM",
+        "AF. FRESA DE MOLDURA 90 MM",
+        "AF. FRESA DE MOLDURA 100 MM",
+        "AF. JUEGO DE MACHIBREMBRADO",
+        "AF. JUEGO DE MORTAJADORA"
+      ]
+    },
+    {
+      "nombre": "Sierras",
+      "items": [
+        "AF. SIEBRA COPA HASTA 30 MM",
+        "AF. SIERRA COPA HASTA 50 MM",
+        "AF. SIERRA COPA HASTA 70 MM"
+      ]
+    },
+    {
+      "nombre": "Discos Diente",
+      "items": [
+        "AFILADO DIENTE MAYOR A 450MM",
+        "AFILADO DIENTE TRAPEZOIDAL MAYOR A 450MM",
+        "AFILADO DIENTES CONCAVOS",
+        "DIENTE NUEVO HASTA 4.5 MM",
+        "DIENTE NUEVO HASTA 5.5 MM",
+        "DIENTE NUEVO HASTA 6.5 MM",
+        "BASE 4.5 MM",
+        "BASE 5.5 MM",
+        "BASE 6.5 MM",
+        "SOLO SOLDAR DIENTE",
+        "SOLO SOLDAR DIENTE MAYOR 4.5 MM",
+        "SOLO SOLDA DIENTE TRAPEZOIDAL MAYOR 450",
+        "PARA DISCO MAYOR A 450 MM"
+      ]
+    },
+    {
+      "nombre": "Discos Especiales",
+      "items": [
+        "AF. DISCO 250X92",
+        "AF. DISCO 300X90Z",
+        "AF. DISCO 300X24Z",
+        "AF. DISCO 300X36Z",
+        "AF. DISCO 300X48Z",
+        "AF. DISCO 350X36Z",
+        "AF. DISCO 350X48Z",
+        "AF. DISCO 250X120Z",
+        "AF. DISCO 250X60Z",
+        "AF. DISCO 300X40Z",
+        "AF. DISCO 250X40Z",
+        "AF. DISCO 250X60Z",
+        "AF. DISCO 220X48Z",
+        "AF. DISCO 200X40Z",
+        "AF. DISCO 200X24Z",
+        "AF. DISCO 300X172Z",
+        "AF. DISCO 250X48Z",
+        "AF. DISCO 250X36Z",
+        "AF. DISCO 400X36Z",
+        "AF. DISCO 300X24Z",
+        "AF. DISCO 350X54Z",
+        "AF. DISCO 350X96Z",
+        "AF. DISCO 380X72Z",
+        "AF. DISCO 180X36Z",
+        "AF. DISCO 300X48Z",
+        "AF. DISCO 300X80Z",
+        "AF. DISCO 250X102Z",
+        "AF. DISCO 400X64Z",
+        "AF. DISCO 210X42Z",
+        "AF. DISCO 350X100Z",
+        "AF. DISCO 350X72Z",
+        "AF. DISCO 210X60Z",
+        "AF. DISCO 300X100Z",
+        "AF. DISCO 250X40Z",
+        "AF. DISCO 350X84Z",
+        "AF. DISCO 200X36Z",
+        "AF. DISCO 250X48Z",
+        "AF. DISCO 250X100Z",
+        "AF. DISCO 400X28Z",
+        "AF. DISCO 150X20Z",
+        "AF. DISCO 400X36Z",
+        "REC. DISCOS MULTIPLE",
+        "AF. DISCO 350X42Z",
+        "AF. DISCO 400X48Z",
+        "AF. DISCO 250X54Z",
+        "AF. DISCO 250X36Z",
+        "AF. DISCO 220X48Z",
+        "AF. DISCO 180X42Z",
+        "AF. DISCO 180X72Z"
+      ]
+    },
+    {
+      "nombre": "Hueco y Rebanadora",
+      "items": [
+        "HUECO HASTA 40 MM",
+        "HUECO MAYOR A 40 MM",
+        "HUECO DE DISCO CON CHAVETAS",
+        "AF. DISCO DE REBANADORA",
+        "AF. MECHA MOLDURA MAYOR 45;"
+      ]
+    },
+    {
+      "nombre": "Servicios Especiales",
+      "items": [
+        "SERVICIO DE AFILO",
+        "AJUSTE CUCHARA",
+        "SERVICIO AFILOD RODILLO S/MILESTRA",
+        "REC. MECHAS RECTAS HASTA 20MM",
+        "AF. DISCOS PREC ADAPT"
+      ]
+    },
+    {
+      "nombre": "Discos Precortados",
+      "items": [
+        "AF. DISCO 180X48Z",
+        "AF. DISCO 250X24Z",
+        "AF. DISCO 400X72Z",
+        "AF. DISCO 180X36Z",
+        "AF. DISCO 250X36Z",
+        "AF. DISCO 220X44Z",
+        "AF. DISCO 350X28Z",
+        "AF. DISCO 450X28Z",
+        "AF. DISCO 450X42Z",
+        "AF. DISCO 400X80Z"
+      ]
+    }
+  ]
+}

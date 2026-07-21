@@ -1,5 +1,5 @@
 from .user import db
-from datetime import datetime
+from utils import now_ve
 
 
 class Photo(db.Model):
@@ -8,7 +8,7 @@ class Photo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     orden_trabajo_id = db.Column(db.Integer, db.ForeignKey('work_orders.id'), unique=True, nullable=False)
     ruta_foto = db.Column(db.String(500), nullable=False)
-    fecha_recibido = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_recibido = db.Column(db.DateTime, default=now_ve)
 
     def to_dict(self):
         return {

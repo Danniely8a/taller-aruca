@@ -17,7 +17,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @photos_bp.route('/<int:order_id>', methods=['POST'])
-@role_required('Recepción / Ventas')
+@role_required('Gerente General', 'Recepción / Ventas')
 def upload_photo(order_id):
     order = WorkOrder.query.get_or_404(order_id)
     if 'foto' not in request.files:
