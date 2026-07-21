@@ -1,10 +1,20 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
+import bcrypt as _bcrypt
 from flask_login import UserMixin
 from utils import now_ve
 
 db = SQLAlchemy()
-bcrypt = Bcrypt()
+
+
+class BcryptCompat:
+    def generate_password_hash(self, password):
+        return _bcrypt.hashpw(password.encode('utf-8'), _bcrypt.gensalt()).decode('utf-8')
+    def check_password_hash(self, hashed, password):
+        return _bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+    def init_app(self, app):
+        pass
+
+bcrypt = BcryptCompat()
 
 
 class User(UserMixin, db.Model):
