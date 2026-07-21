@@ -6,90 +6,74 @@ backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ba
 sys.path.insert(0, backend_path)
 os.chdir(backend_path)
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from flask_login import LoginManager
+from models.user import db, bcrypt, User
+from routes import (
+    auth_bp, users_bp, clients_bp, equipments_bp,
+    work_orders_bp, photos_bp, status_history_bp, qr_bp, payments_bp, notifications_bp,
+    public_order_bp
+)
+from routes.pagos_semanales import pagos_semanales_bp
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-aruca-2026')
+
+database_url = os.getenv('DATABASE_URL')
+if database_url:
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    database_url = database_url.replace('%24', '$')
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(backend_path, 'taller_maquinas.db')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = True
+
+db.init_app(app)
+bcrypt.init_app(app)
+CORS(app, supports_credentials=True)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
+
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(users_bp, url_prefix='/api/users')
+app.register_blueprint(clients_bp, url_prefix='/api/clients')
+app.register_blueprint(equipments_bp, url_prefix='/api/equipments')
+app.register_blueprint(work_orders_bp, url_prefix='/api/work-orders')
+app.register_blueprint(photos_bp, url_prefix='/api/photos')
+app.register_blueprint(status_history_bp, url_prefix='/api/status-history')
+app.register_blueprint(qr_bp, url_prefix='/api/qr')
+app.register_blueprint(payments_bp, url_prefix='/api/payments')
+app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
+app.register_blueprint(public_order_bp, url_prefix='/ver')
+app.register_blueprint(pagos_semanales_bp, url_prefix='/api/pagos-semanales')
 
 @app.route('/api/health', methods=['GET'])
 def health():
     return jsonify({'status': 'ok', 'message': 'API funcionando correctamente'})
 
-@app.route('/api/debug-imports', methods=['GET'])
-def debug_imports():
-    results = {}
-    try:
-        from flask_cors import CORS
-        results['flask_cors'] = 'ok'
-    except Exception as e:
-        results['flask_cors'] = str(e)
-    try:
-        from flask_login import LoginManager
-        results['flask_login'] = 'ok'
-    except Exception as e:
-        results['flask_login'] = str(e)
-    try:
-        from models.user import db, bcrypt, User
-        results['models.user'] = 'ok'
-    except Exception as e:
-        results['models.user'] = str(e)
-    try:
-        from routes.auth import auth_bp
-        results['routes.auth'] = 'ok'
-    except Exception as e:
-        results['routes.auth'] = str(e)
-    try:
-        from routes.work_orders import work_orders_bp
-        results['routes.work_orders'] = 'ok'
-    except Exception as e:
-        results['routes.work_orders'] = str(e)
-    try:
-        from routes.qr import qr_bp
-        results['routes.qr'] = 'ok'
-    except Exception as e:
-        results['routes.qr'] = str(e)
-    try:
-        from routes.photos import photos_bp
-        results['routes.photos'] = 'ok'
-    except Exception as e:
-        results['routes.photos'] = str(e)
-    try:
-        from routes.payments import payments_bp
-        results['routes.payments'] = 'ok'
-    except Exception as e:
-        results['routes.payments'] = str(e)
-    try:
-        from routes.notifications import notifications_bp
-        results['routes.notifications'] = 'ok'
-    except Exception as e:
-        results['routes.notifications'] = str(e)
-    try:
-        from routes.public_order import public_order_bp
-        results['routes.public_order'] = 'ok'
-    except Exception as e:
-        results['routes.public_order'] = str(e)
-    try:
-        from routes.pagos_semanales import pagos_semanales_bp
-        results['routes.pagos_semanales'] = 'ok'
-    except Exception as e:
-        results['routes.pagos_semanales'] = str(e)
-    try:
-        from routes.clients import clients_bp
-        results['routes.clients'] = 'ok'
-    except Exception as e:
-        results['routes.clients'] = str(e)
-    try:
-        from routes.equipments import equipments_bp
-        results['routes.equipments'] = 'ok'
-    except Exception as e:
-        results['routes.equipments'] = str(e)
-    try:
-        from routes.users import users_bp
-        results['routes.users'] = 'ok'
-    except Exception as e:
-        results['routes.users'] = str(e)
-    try:
-        from routes.status_history import status_history_bp
-        results['routes.status_history'] = 'ok'
-    except Exception as e:
-        results['routes.status_history'] = str(e)
-    return jsonify(results)
+with app.app_context():
+    db.create_all()
+    if User.query.count() == 0:
+        usuarios = [
+            {'nombre': 'Alberto Bonetti', 'correo': 'alberto@aruca.com', 'rol': 'Gerente General'},
+            {'nombre': 'Eduardo Reinosa', 'correo': 'eduardo@aruca.com', 'rol': 'Técnico'},
+            {'nombre': 'Hernán Rojas', 'correo': 'hernan@aruca.com', 'rol': 'Supervisor'},
+            {'nombre': 'Daniely Ochoa', 'correo': 'daniely@aruca.com', 'rol': 'Recepción / Ventas'},
+            {'nombre': 'Carlos Perez', 'correo': 'carlos@gmail.com', 'rol': 'Técnico'},
+            {'nombre': 'Genesis', 'correo': 'genesis@aruca.com', 'rol': 'Pagos'},
+        ]
+        for u in usuarios:
+            user = User(nombre=u['nombre'], correo=u['correo'], rol=u['rol'])
+            user.set_password('123456')
+            db.session.add(user)
+        db.session.commit()
