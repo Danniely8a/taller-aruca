@@ -12,7 +12,7 @@ import io
 
 qr_bp = Blueprint('qr', __name__)
 
-QR_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'qr')
+QR_FOLDER = os.path.join('/tmp', 'uploads', 'qr') if os.getenv('VERCEL') else os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', 'qr')
 os.makedirs(QR_FOLDER, exist_ok=True)
 
 def get_site_url():
