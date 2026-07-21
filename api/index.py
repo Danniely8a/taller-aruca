@@ -27,6 +27,15 @@ try:
                 user.set_password('123456')
                 db.session.add(user)
             db.session.commit()
+
+    @application.route('/api/debug-routes', methods=['GET'])
+    def debug_routes():
+        from flask import jsonify
+        routes = []
+        for rule in application.url_map.iter_rules():
+            routes.append(f"{rule.methods} {rule.rule}")
+        return jsonify(sorted(routes))
+
     app = application
 except Exception as e:
     traceback.print_exc()
