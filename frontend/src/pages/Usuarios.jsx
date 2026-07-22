@@ -89,6 +89,17 @@ export default function Usuarios() {
     setShowResetModal(true);
   };
 
+  const handleBulkSetup = async () => {
+    if (!confirm('Esto asignará la pregunta "¿Cuál es el nombre de tu primera mascota?" con respuesta "aruca2026" a todos los usuarios que no tengan pregunta configurada.\n\n¿Continuar?')) return;
+    try {
+      const res = await users.setupPreguntas({ pregunta: PREGUNTAS[0], respuesta: 'aruca2026' });
+      toast.success(res.data.message + ' — Respuesta: aruca2026');
+      loadUsuarios();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al configurar');
+    }
+  };
+
   if (!hasPermission('Gerente General')) {
     return <div className="card"><p>No tienes permiso para ver esta sección.</p></div>;
   }
@@ -97,13 +108,18 @@ export default function Usuarios() {
     <div>
       <div className="top-bar with-actions">
         <h1>Gestión de Usuarios</h1>
-        <button className="btn btn-primary" onClick={() => {
-          setEditing(null);
-          setForm({ nombre: '', correo: '', telefono: '', contrasena: '', pregunta_seguridad: '', respuesta_seguridad: '', rol: 'Recepción / Ventas', activo: true });
-          setShowModal(true);
-        }}>
-          + Nuevo Usuario
-        </button>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button className="btn btn-outline" onClick={handleBulkSetup} title="Configurar pregunta de seguridad para todos los usuarios sin pregunta">
+            🔐 Configurar Preguntas
+          </button>
+          <button className="btn btn-primary" onClick={() => {
+            setEditing(null);
+            setForm({ nombre: '', correo: '', telefono: '', contrasena: '', pregunta_seguridad: '', respuesta_seguridad: '', rol: 'Recepción / Ventas', activo: true });
+            setShowModal(true);
+          }}>
+            + Nuevo Usuario
+          </button>
+        </div>
       </div>
 
       <div className="card">

@@ -31,6 +31,7 @@ export const users = {
   create: (data) => api.post('/users/', data),
   update: (id, data) => api.put(`/users/${id}`, data),
   delete: (id) => api.delete(`/users/${id}`),
+  setupPreguntas: (data) => api.post('/users/setup-preguntas', data),
 };
 
 export const clients = {

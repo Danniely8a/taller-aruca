@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models.user import User, db
-from .auth import role_required
+from .auth import role_required, PREGUNTAS_SEGURIDAD
 from flask_login import login_required
 
 users_bp = Blueprint('users', __name__)
@@ -10,6 +10,23 @@ users_bp = Blueprint('users', __name__)
 def get_users():
     users = User.query.all()
     return jsonify([u.to_dict() for u in users])
+
+@users_bp.route('/setup-preguntas', methods=['POST'])
+@role_required('Gerente General')
+def setup_preguntas_bulk():
+    """Assign default security questions to all users without one"""
+    data = request.get_json() or {}
+    pregunta_default = data.get('pregunta', PREGUNTAS_SEGURIDAD[0])
+    respuesta_default = data.get('respuesta', 'aruca2026')
+
+    users_without = User.query.filter_by(pregunta_seguridad=None).all()
+    count = 0
+    for user in users_without:
+        user.pregunta_seguridad = pregunta_default
+        user.set_respuesta_seguridad(respuesta_default)
+        count += 1
+    db.session.commit()
+    return jsonify({'message': f'{count} usuarios configurados', 'pregunta': pregunta_default, 'respuesta': respuesta_default})
 
 @users_bp.route('/', methods=['POST'])
 @role_required('Gerente General')

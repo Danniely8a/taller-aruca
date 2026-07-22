@@ -100,7 +100,7 @@ def check_pregunta():
     if not user:
         return jsonify({'error': 'No se encontró usuario activo con ese correo'}), 404
     if not user.pregunta_seguridad:
-        return jsonify({'error': 'Este usuario no tiene pregunta de seguridad configurada. Contacta al administrador.'}), 400
+        return jsonify({'error': 'Tu cuenta no tiene pregunta de seguridad. Solicita al administrador que la configure desde Gestión de Usuarios → Editar tu usuario.'}), 400
 
     return jsonify({'pregunta': user.pregunta_seguridad})
 
