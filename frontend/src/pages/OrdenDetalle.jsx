@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { workOrders, photos, statusHistory, qr, payments } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import PhotoGallery from '../components/PhotoGallery';
+import ExportOrderButton from '../components/ExportOrder';
+import { SkeletonCard } from '../components/Skeleton';
 
 export default function OrdenDetalle() {
   const { id } = useParams();
@@ -11,6 +14,7 @@ export default function OrdenDetalle() {
   const [orden, setOrden] = useState(null);
   const [historial, setHistorial] = useState([]);
   const [foto, setFoto] = useState(null);
+  const [fotos, setFotos] = useState([]);
   const [pagos, setPagos] = useState([]);
   const [totalPagado, setTotalPagado] = useState(0);
   const [showEstadoModal, setShowEstadoModal] = useState(false);
@@ -19,6 +23,7 @@ export default function OrdenDetalle() {
   const [pagoForm, setPagoForm] = useState({ monto: '', descripcion: '', comprobante: null });
   const [notasTecnicas, setNotasTecnicas] = useState('');
   const [guardandoNotas, setGuardandoNotas] = useState(false);
+  const [loadingPhotos, setLoadingPhotos] = useState(true);
 
   const ESTADOS_REPARACION = [
     'Recibido', 'En Diagnóstico', 'Esperando Presupuesto', 'Esperando Aprobación',
@@ -57,10 +62,13 @@ export default function OrdenDetalle() {
       try {
         const photoRes = await photos.get(id);
         setFoto(photoRes.data);
-      } catch { setFoto(null); }
+        setFotos(photoRes.data ? [photoRes.data] : []);
+      } catch { setFoto(null); setFotos([]); }
     } catch (err) {
       toast.error('Error al cargar la orden');
       navigate('/ordenes');
+    } finally {
+      setLoadingPhotos(false);
     }
   };
 
@@ -158,7 +166,12 @@ export default function OrdenDetalle() {
     }
   };
 
-  if (!orden) return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--gray-400)' }}>Cargando...</div>;
+  if (!orden) return (
+    <div style={{ padding: '20px' }}>
+      <SkeletonCard lines={4} />
+      <SkeletonCard lines={4} style={{ marginTop: '16px' }} />
+    </div>
+  );
 
   return (
     <div>
@@ -178,6 +191,7 @@ export default function OrdenDetalle() {
               Descargar Etiqueta QR
             </button>
           )}
+          <ExportOrderButton orden={orden} historial={historial} />
           <button className="btn btn-outline" onClick={() => window.open(`/api/work-orders/${id}/comprobante`, '_blank')}>
             Comprobante Cliente
           </button>
@@ -296,10 +310,10 @@ export default function OrdenDetalle() {
         <div>
           <div className="card" style={{ textAlign: 'center' }}>
             <div className="card-header">{orden?.tipo_servicio === 'Afilado' ? 'Fotografía del Afilado' : 'Fotografía del Equipo'}</div>
-            {foto ? (
-              <img src={`/api/photos/uploads/${foto.ruta_foto}`} alt="Equipo" className="photo-preview" />
+            {loadingPhotos ? (
+              <SkeletonCard lines={2} />
             ) : (
-              <p style={{ color: 'var(--gray-400)', padding: '20px 0' }}>Sin fotografía</p>
+              <PhotoGallery photos={fotos} />
             )}
             {hasPermission('Recepción / Ventas', 'Gerente General') && (
               <div style={{ marginTop: '12px' }}>

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { clients } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { SkeletonTable } from '../components/Skeleton';
 
 export default function Clientes() {
   const { hasPermission } = useAuth();
   const [lista, setLista] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ cedula_rif: '', nombre: '', telefono: '', empresa: '', correo: '' });
 
   useEffect(() => { load(); }, []);
@@ -15,6 +17,7 @@ export default function Clientes() {
   const load = async () => {
     try { const res = await clients.getAll(); setLista(res.data); }
     catch (err) { toast.error('Error al cargar clientes'); }
+    finally { setLoading(false); }
   };
 
   const handleSubmit = async (e) => {
@@ -44,6 +47,7 @@ export default function Clientes() {
       </div>
 
       <div className="card">
+        {loading ? <SkeletonTable rows={5} cols={7} /> : (
         <table className="table">
           <thead>
             <tr><th>ID</th><th>Cédula/RIF</th><th>Nombre</th><th>Teléfono</th><th>Empresa</th><th>Correo</th><th>Registro</th><th></th></tr>
@@ -61,6 +65,7 @@ export default function Clientes() {
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {showModal && (

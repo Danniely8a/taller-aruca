@@ -1,4 +1,4 @@
-const CACHE_NAME = 'taller-aruca-v1';
+const CACHE_NAME = 'taller-aruca-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -28,10 +28,19 @@ self.addEventListener('fetch', (event) => {
 
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return new Response(JSON.stringify({ error: 'Sin conexión' }), {
-          headers: { 'Content-Type': 'application/json' },
-          status: 503,
+      fetch(event.request).then((response) => {
+        if (response.ok && event.request.method === 'GET') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => {
+        return caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return new Response(JSON.stringify({ error: 'Sin conexión', offline: true }), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 503,
+          });
         });
       })
     );
@@ -46,7 +55,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         }
         return response;
-      });
+      }).catch(() => cached);
       return cached || fetched;
     })
   );

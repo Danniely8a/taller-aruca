@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notifications } from '../api';
+import toast from 'react-hot-toast';
 
 export default function NotificationBell() {
   const [notifs, setNotifs] = useState([]);
@@ -29,7 +30,9 @@ export default function NotificationBell() {
       const res = await notifications.getAll();
       setNotifs(res.data.notifications);
       setNoLeidas(res.data.no_leidas);
-    } catch {}
+    } catch {
+      // Silently fail for polling - don't spam toasts
+    }
   };
 
   const handleMarkAll = async () => {
@@ -37,7 +40,10 @@ export default function NotificationBell() {
       await notifications.markAllRead();
       setNoLeidas(0);
       setNotifs(prev => prev.map(n => ({ ...n, leida: true })));
-    } catch {}
+      toast.success('Notificaciones marcadas como leídas');
+    } catch {
+      toast.error('Error al marcar notificaciones');
+    }
   };
 
   const handleClick = async (notif) => {
@@ -46,7 +52,9 @@ export default function NotificationBell() {
         await notifications.markRead(notif.id);
         setNoLeidas(prev => Math.max(0, prev - 1));
         setNotifs(prev => prev.map(n => n.id === notif.id ? { ...n, leida: true } : n));
-      } catch {}
+      } catch {
+        toast.error('Error al marcar notificación');
+      }
     }
     setOpen(false);
     if (notif.orden_trabajo_id) {

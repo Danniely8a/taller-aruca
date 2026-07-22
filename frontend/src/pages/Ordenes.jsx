@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { workOrders, clients, equipments } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { SkeletonTable } from '../components/Skeleton';
+import usePullToRefresh from '../hooks/usePullToRefresh';
+import PullIndicator from '../components/PullIndicator';
 
 export default function Ordenes() {
   const { user, hasPermission } = useAuth();
@@ -12,6 +15,7 @@ export default function Ordenes() {
   const [filtroEstado, setFiltroEstado] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ cliente_id: '', equipo_id: '', prioridad: 'Normal', falla_reportada: '' });
 
   const ESTADOS = [
@@ -50,7 +54,10 @@ export default function Ordenes() {
       }
       setOrdenes(data);
     } catch (err) { toast.error('Error al cargar órdenes'); }
+    finally { setLoading(false); }
   };
+
+  const { containerRef, refreshing, pullDistance } = usePullToRefresh(load);
 
   const loadClientes = async () => {
     try { const res = await clients.getAll(); setClientes(res.data); } catch {}
@@ -82,7 +89,8 @@ export default function Ordenes() {
   });
 
   return (
-    <div>
+    <div ref={containerRef}>
+      <PullIndicator refreshing={refreshing} pullDistance={pullDistance} />
       <div className="top-bar with-actions">
         <h1>Órdenes de Trabajo</h1>
         {hasPermission('Recepción / Ventas', 'Gerente General') && (
@@ -136,6 +144,9 @@ export default function Ordenes() {
       </div>
 
       <div className="card">
+        {loading ? (
+          <SkeletonTable rows={6} cols={7} />
+        ) : (
         <table className="table">
           <thead>
             <tr>
@@ -166,6 +177,7 @@ export default function Ordenes() {
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {showModal && (

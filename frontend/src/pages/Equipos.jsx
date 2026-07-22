@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { equipments, clients } from '../api';
 import toast from 'react-hot-toast';
+import { SkeletonTable } from '../components/Skeleton';
 
 export default function Equipos() {
   const [lista, setLista] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ cliente_id: '', tipo_equipo: 'Compresores', marca: '', modelo: '', numero_serie: '' });
 
   const TIPOS = ['Compresores', 'Pistolas para clavar', 'Engrapadoras', 'Máquinas pequeñas', 'Máquinas grandes'];
@@ -16,6 +18,7 @@ export default function Equipos() {
   const load = async () => {
     try { const res = await equipments.getAll(); setLista(res.data); }
     catch (err) { toast.error('Error al cargar equipos'); }
+    finally { setLoading(false); }
   };
 
   const loadClientes = async () => { try { const res = await clients.getAll(); setClientes(res.data); } catch {} };
@@ -49,6 +52,7 @@ export default function Equipos() {
       </div>
 
       <div className="card">
+        {loading ? <SkeletonTable rows={5} cols={6} /> : (
         <table className="table">
           <thead>
             <tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Marca</th><th>Modelo</th><th>N° Serie</th><th></th></tr>
@@ -66,6 +70,7 @@ export default function Equipos() {
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {showModal && (

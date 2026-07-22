@@ -4,6 +4,9 @@ import { workOrders, photos, qr } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import catalogo from '../data/catalogo_afilado.json';
+import { SkeletonTable, SkeletonCard } from '../components/Skeleton';
+import usePullToRefresh from '../hooks/usePullToRefresh';
+import PullIndicator from '../components/PullIndicator';
 
 const TIPOS_EQUIPO = ['Compresores', 'Pistolas para clavar', 'Engrapadoras', 'Máquinas pequeñas', 'Máquinas grandes'];
 const TIPOS_SERVICIO = ['Reparación', 'Afilado'];
@@ -43,6 +46,7 @@ export default function Recepcion() {
   const [itemsFiltrados, setItemsFiltrados] = useState([]);
   const [mostrarLista, setMostrarLista] = useState(false);
   const [itemsSeleccionados, setItemsSeleccionados] = useState([]);
+  const [loading, setLoading] = useState(true);
   const todosItems = obtenerTodosItems();
 
   const ESTADOS_COLORES = {
@@ -85,9 +89,13 @@ export default function Recepcion() {
       }
       setOrdenes(data.slice(0, 20));
     } catch (err) {
-      console.error(err);
+      toast.error('Error al cargar órdenes');
+    } finally {
+      setLoading(false);
     }
   };
+
+  const { containerRef, refreshing, pullDistance } = usePullToRefresh(cargarOrdenes);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -148,7 +156,8 @@ export default function Recepcion() {
   };
 
   return (
-    <div>
+    <div ref={containerRef}>
+      <PullIndicator refreshing={refreshing} pullDistance={pullDistance} />
       <div className="top-bar">
         <h1>Recepción de Equipos</h1>
       </div>
@@ -418,7 +427,9 @@ export default function Recepcion() {
               />
             </div>
             <div className="progress-list">
-              {ordenes.length === 0 ? (
+              {loading ? (
+                <SkeletonTable rows={5} cols={4} />
+              ) : ordenes.length === 0 ? (
                 <div className="empty-state">
                   <div className="empty-icon">📋</div>
                   <p>No hay órdenes registradas</p>

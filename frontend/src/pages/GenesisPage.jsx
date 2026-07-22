@@ -27,7 +27,7 @@ function GenesisPage() {
       const res = await workOrders.getOrdenesItems();
       setOrdenes(res.data);
     } catch (err) {
-      console.error(err);
+      toast.error('Error al cargar órdenes');
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { workOrders } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { SkeletonCard } from '../components/Skeleton';
+import usePullToRefresh from '../hooks/usePullToRefresh';
+import PullIndicator from '../components/PullIndicator';
 
 const ESTADOS_AFILADO = ['Recibido', 'Afilando (En Proceso)', 'Listo para Entrega', 'Entregado'];
 const ESTADOS_REPARACION = ['Recibido', 'En Diagnóstico / Presupuesto', 'Listo para Entrega', 'Entregado'];
@@ -42,6 +45,7 @@ export default function MisOrdenes() {
   const [vista, setVista] = useState('todas');
   const [filtroItems, setFiltroItems] = useState('todos');
   const [diaSeleccionado, setDiaSeleccionado] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(true);
   const printRef = useRef(null);
 
   useEffect(() => { cargarOrdenes(); }, []);
@@ -56,9 +60,13 @@ export default function MisOrdenes() {
       const res = await workOrders.getMisOrdenes();
       setOrdenes(res.data);
     } catch (err) {
-      console.error(err);
+      toast.error('Error al cargar órdenes');
+    } finally {
+      setLoading(false);
     }
   };
+
+  const { containerRef, refreshing, pullDistance } = usePullToRefresh(cargarOrdenes);
 
   const cambiarEstado = async (orderId, nuevoEstado) => {
     try {
@@ -109,7 +117,8 @@ export default function MisOrdenes() {
   };
 
   return (
-    <div>
+    <div ref={containerRef}>
+      <PullIndicator refreshing={refreshing} pullDistance={pullDistance} />
       <div className="top-bar">
         <h1>Mis Órdenes de {tipoLabel}</h1>
       </div>
@@ -187,14 +196,20 @@ export default function MisOrdenes() {
               </button>
             </div>
           </div>
-          {ordenes.length === 0 ? (
+          {ordenes.length === 0 && !loading ? (
             <div className="empty-state">
               <div className="empty-icon">📋</div>
               <p>No hay órdenes asignadas</p>
             </div>
           ) : (
             <div className="progress-list">
-              {ordenes.filter(o => {
+              {loading ? (
+                <>
+                  <SkeletonCard lines={3} />
+                  <SkeletonCard lines={3} />
+                  <SkeletonCard lines={3} />
+                </>
+              ) : ordenes.filter(o => {
                 const items = o.item_seleccionado || [];
                 const itemsListos = o.items_listos || [];
                 const todosListos = items.length > 0 && items.every(i => itemsListos.includes(i.item || i));

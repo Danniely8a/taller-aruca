@@ -2,19 +2,43 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#1a1a2e" />
-    <meta name="description" content="Sistema de gestión de órdenes de trabajo para taller de maquinaria" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#0F172A" />
+    <meta name="description" content="Sistema de gestión de órdenes de trabajo para taller de maquinaria - Taller Aruca" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Taller Aruca" />
+    <meta name="msapplication-TileColor" content="#0F172A" />
+    <meta name="msapplication-tap-highlight" content="no" />
     <link rel="apple-touch-icon" href="/logo_aruca.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/pwa-512x512.png" />
     <link rel="manifest" href="/manifest.json" />
     <title>Taller Aruca - Sistema de Recepción</title>
     <link rel="icon" type="image/png" href="/logo_aruca.png" />
+    <style>
+      body { margin: 0; background: #0F172A; }
+      #splash {
+        position: fixed; inset: 0; z-index: 99999;
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        transition: opacity 0.4s ease;
+      }
+      #splash.hide { opacity: 0; pointer-events: none; }
+      #splash img { width: 100px; height: 100px; border-radius: 24px; margin-bottom: 16px; animation: pulse 1.5s ease infinite; }
+      #splash .splash-text { color: white; font-family: system-ui; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.02em; }
+      #splash .splash-sub { color: rgba(255,255,255,0.5); font-family: system-ui; font-size: 0.75rem; margin-top: 6px; }
+      @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    </style>
   </head>
   <body>
+    <div id="splash">
+      <img src="/logo_aruca.png" alt="Aruca" />
+      <div class="splash-text">Taller Aruca</div>
+      <div class="splash-sub">Cargando sistema...</div>
+    </div>
     <div id="root"></div>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script type="module" src="/src/main.jsx"></script>
@@ -22,6 +46,12 @@
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       }
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const splash = document.getElementById('splash');
+          if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 500); }
+        }, 600);
+      });
     </script>
   </body>
 </html>
