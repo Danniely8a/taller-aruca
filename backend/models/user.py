@@ -27,6 +27,8 @@ class User(UserMixin, db.Model):
     correo = db.Column(db.String(120), unique=True, nullable=False)
     contrasena = db.Column(db.String(200), nullable=False)
     telefono = db.Column(db.String(20), nullable=True)
+    pregunta_seguridad = db.Column(db.String(200), nullable=True)
+    respuesta_seguridad = db.Column(db.String(200), nullable=True)
     rol = db.Column(db.String(50), nullable=False)
     permisos = db.Column(db.Text, nullable=True)
     activo = db.Column(db.Boolean, default=True)
@@ -39,12 +41,22 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return bcrypt.check_password_hash(self.contrasena, password)
 
+    def set_respuesta_seguridad(self, respuesta):
+        result = bcrypt.generate_password_hash(respuesta.lower().strip())
+        self.respuesta_seguridad = result if isinstance(result, str) else result.decode('utf-8')
+
+    def check_respuesta_seguridad(self, respuesta):
+        if not self.respuesta_seguridad:
+            return False
+        return bcrypt.check_password_hash(self.respuesta_seguridad, respuesta.lower().strip())
+
     def to_dict(self):
         return {
             'id': self.id,
             'nombre': self.nombre,
             'correo': self.correo,
             'telefono': self.telefono,
+            'pregunta_seguridad': self.pregunta_seguridad,
             'rol': self.rol,
             'permisos': self.permisos,
             'activo': self.activo,

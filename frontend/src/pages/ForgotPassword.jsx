@@ -5,29 +5,28 @@ import toast from 'react-hot-toast';
 
 export default function ForgotPassword() {
   const [step, setStep] = useState(1);
-  const [telefono, setTelefono] = useState('');
-  const [codigo, setCodigo] = useState('');
+  const [correo, setCorreo] = useState('');
+  const [pregunta, setPregunta] = useState('');
+  const [respuesta, setRespuesta] = useState('');
   const [nuevaContrasena, setNuevaContrasena] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [loading, setLoading] = useState(false);
-  const [debugCode, setDebugCode] = useState(null);
 
-  const handleSendCode = async (e) => {
+  const handleCheckCorreo = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await auth.forgotPassword({ telefono });
-      toast.success('Código enviado por WhatsApp');
-      setDebugCode(res.data.debug_code);
+      const res = await auth.checkPregunta({ correo });
+      setPregunta(res.data.pregunta);
       setStep(2);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al enviar código');
+      toast.error(err.response?.data?.error || 'Error al buscar usuario');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerify = async (e) => {
+  const handleRecover = async (e) => {
     e.preventDefault();
     if (nuevaContrasena !== confirmar) {
       toast.error('Las contraseñas no coinciden');
@@ -35,15 +34,15 @@ export default function ForgotPassword() {
     }
     setLoading(true);
     try {
-      await auth.verifyResetCode({
-        telefono,
-        codigo,
+      await auth.recoverPassword({
+        correo,
+        respuesta,
         nueva_contrasena: nuevaContrasena,
       });
       toast.success('Contraseña restablecida correctamente');
       setStep(3);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al verificar código');
+      toast.error(err.response?.data?.error || 'Error al restablecer contraseña');
     } finally {
       setLoading(false);
     }
@@ -72,50 +71,52 @@ export default function ForgotPassword() {
             Recuperar Contraseña
           </h1>
           <p style={{ color: '#6B7280', fontSize: '0.85rem' }}>
-            {step === 1 && 'Ingresa tu número de teléfono registrado'}
-            {step === 2 && 'Ingresa el código que recibiste por WhatsApp'}
+            {step === 1 && 'Ingresa tu correo registrado'}
+            {step === 2 && 'Responde tu pregunta de seguridad'}
             {step === 3 && '¡Listo! Ya puedes iniciar sesión'}
           </p>
         </div>
 
-        {debugCode && (
-          <div style={{
-            background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: '10px',
-            padding: '10px 14px', marginBottom: '16px', fontSize: '0.8rem', color: '#92400E'
-          }}>
-            <strong>DEV:</strong> Tu código es <strong>{debugCode}</strong>
-          </div>
-        )}
-
         {step === 1 && (
-          <form onSubmit={handleSendCode}>
+          <form onSubmit={handleCheckCorreo}>
             <div className="form-group">
-              <label className="label-required">Teléfono (WhatsApp)</label>
+              <label className="label-required">Correo Electrónico</label>
               <input
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                placeholder="+58 412 1234567"
+                type="email"
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
+                placeholder="correo@aruca.com"
                 required
                 style={{ fontSize: '1rem', padding: '14px' }}
               />
             </div>
             <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
-              {loading ? 'Enviando...' : 'Enviar Código por WhatsApp'}
+              {loading ? 'Buscando...' : 'Buscar mi cuenta'}
             </button>
           </form>
         )}
 
         {step === 2 && (
-          <form onSubmit={handleVerify}>
+          <form onSubmit={handleRecover}>
+            <div style={{
+              background: 'var(--primary-bg)', borderRadius: '12px', padding: '16px',
+              marginBottom: '20px', border: '1px solid var(--primary)'
+            }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginBottom: '6px', fontWeight: 600 }}>
+                Tu pregunta de seguridad:
+              </p>
+              <p style={{ fontSize: '0.95rem', color: 'var(--primary)', fontWeight: 700, margin: 0 }}>
+                🔐 {pregunta}
+              </p>
+            </div>
             <div className="form-group">
-              <label className="label-required">Código de Verificación</label>
+              <label className="label-required">Tu Respuesta</label>
               <input
-                value={codigo}
-                onChange={(e) => setCodigo(e.target.value)}
-                placeholder="000000"
+                value={respuesta}
+                onChange={(e) => setRespuesta(e.target.value)}
+                placeholder="Escribe tu respuesta"
                 required
-                maxLength={6}
-                style={{ fontSize: '1.5rem', textAlign: 'center', letterSpacing: '8px', fontWeight: 700, padding: '14px' }}
+                style={{ fontSize: '1rem', padding: '14px' }}
               />
             </div>
             <div className="form-group">
@@ -143,13 +144,13 @@ export default function ForgotPassword() {
               />
             </div>
             <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
-              {loading ? 'Verificando...' : 'Restablecer Contraseña'}
+              {loading ? 'Restableciendo...' : 'Restablecer Contraseña'}
             </button>
             <button type="button" onClick={() => setStep(1)} style={{
               width: '100%', marginTop: '10px', background: 'none', border: 'none',
               color: 'var(--primary)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem'
             }}>
-              ← Volver a enviar código
+              ← Volver
             </button>
           </form>
         )}

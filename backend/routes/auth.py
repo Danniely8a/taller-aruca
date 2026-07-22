@@ -1,12 +1,19 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from models.user import User, PasswordResetCode, db
+from models.user import User, db
 from functools import wraps
-from datetime import datetime, timedelta
 import os
-import requests
 
 auth_bp = Blueprint('auth', __name__)
+
+PREGUNTAS_SEGURIDAD = [
+    '¿Cuál es el nombre de tu primera mascota?',
+    '¿En qué ciudad naciste?',
+    '¿Cuál es tu color favorito?',
+    '¿Cuál es tu comida favorita?',
+    '¿Cómo se llama tu mejor amigo de la infancia?',
+    '¿Cuál es tu equipo de fútbol favorito?',
+]
 
 def role_required(*roles):
     def decorator(f):
@@ -38,6 +45,10 @@ def logout():
 @login_required
 def me():
     return jsonify({'user': current_user.to_dict()})
+
+@auth_bp.route('/preguntas-seguridad', methods=['GET'])
+def preguntas_seguridad():
+    return jsonify({'preguntas': PREGUNTAS_SEGURIDAD})
 
 @auth_bp.route('/change-password', methods=['PUT'])
 @login_required
@@ -77,78 +88,41 @@ def reset_password_admin():
     db.session.commit()
     return jsonify({'message': f'Contraseña de {user.nombre} actualizada correctamente'})
 
-def _send_whatsapp_code(phone, code):
-    """Send verification code via Twilio WhatsApp API"""
-    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
-    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
-    from_number = os.getenv('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
-
-    if not account_sid or not auth_token:
-        print(f'[DEV] Código de verificación para {phone}: {code}')
-        return True
-
-    to_number = f'whatsapp:{phone}'
-    url = f'https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json'
-    data = {
-        'From': from_number,
-        'To': to_number,
-        'Body': f'🔐 *Taller Aruca*\nTu código de verificación es: *{code}*\nVálido por 15 minutos.'
-    }
-    resp = requests.post(url, data=data, auth=(account_sid, auth_token))
-    return resp.status_code == 201
-
-@auth_bp.route('/forgot-password', methods=['POST'])
-def forgot_password():
+@auth_bp.route('/check-pregunta', methods=['POST'])
+def check_pregunta():
     data = request.get_json()
-    telefono = data.get('telefono', '').strip()
+    correo = data.get('correo', '').strip()
 
-    if not telefono:
-        return jsonify({'error': 'El número de teléfono es requerido'}), 400
+    if not correo:
+        return jsonify({'error': 'El correo es requerido'}), 400
 
-    user = User.query.filter_by(telefono=telefono, activo=True).first()
+    user = User.query.filter_by(correo=correo, activo=True).first()
     if not user:
-        return jsonify({'error': 'No se encontró usuario activo con ese teléfono'}), 404
+        return jsonify({'error': 'No se encontró usuario activo con ese correo'}), 404
+    if not user.pregunta_seguridad:
+        return jsonify({'error': 'Este usuario no tiene pregunta de seguridad configurada. Contacta al administrador.'}), 400
 
-    code = PasswordResetCode.generate_code()
-    expires = datetime.utcnow() + timedelta(minutes=15)
+    return jsonify({'pregunta': user.pregunta_seguridad})
 
-    reset = PasswordResetCode(user_id=user.id, code=code, expires_at=expires)
-    db.session.add(reset)
-    db.session.commit()
-
-    sent = _send_whatsapp_code(telefono, code)
-    if not sent:
-        return jsonify({'error': 'Error al enviar el código. Intenta de nuevo.'}), 500
-
-    return jsonify({'message': 'Código enviado por WhatsApp', 'debug_code': code if not os.getenv('TWILIO_ACCOUNT_SID') else None})
-
-@auth_bp.route('/verify-reset-code', methods=['POST'])
-def verify_reset_code():
+@auth_bp.route('/recover-password', methods=['POST'])
+def recover_password():
     data = request.get_json()
-    telefono = data.get('telefono', '').strip()
-    code = data.get('codigo', '').strip()
+    correo = data.get('correo', '').strip()
+    respuesta = data.get('respuesta', '').strip()
     nueva = data.get('nueva_contrasena', '')
 
-    if not telefono or not code or not nueva:
-        return jsonify({'error': 'Teléfono, código y nueva contraseña son requeridos'}), 400
+    if not correo or not respuesta or not nueva:
+        return jsonify({'error': 'Correo, respuesta y nueva contraseña son requeridos'}), 400
     if len(nueva) < 4:
         return jsonify({'error': 'La contraseña debe tener al menos 4 caracteres'}), 400
 
-    user = User.query.filter_by(telefono=telefono, activo=True).first()
+    user = User.query.filter_by(correo=correo, activo=True).first()
     if not user:
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    reset = PasswordResetCode.query.filter_by(
-        user_id=user.id, code=code, used=False
-    ).order_by(PasswordResetCode.id.desc()).first()
+    if not user.check_respuesta_seguridad(respuesta):
+        return jsonify({'error': 'La respuesta es incorrecta'}), 400
 
-    if not reset:
-        return jsonify({'error': 'Código inválido'}), 400
-    if reset.expires_at < datetime.utcnow():
-        return jsonify({'error': 'El código ha expirado. Solicita uno nuevo.'}), 400
-
-    reset.used = True
     user.set_password(nueva)
     db.session.commit()
-
     return jsonify({'message': 'Contraseña restablecida correctamente'})

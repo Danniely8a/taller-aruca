@@ -21,8 +21,9 @@ export const auth = {
   me: () => api.get('/auth/me'),
   changePassword: (data) => api.put('/auth/change-password', data),
   resetPasswordAdmin: (data) => api.put('/auth/reset-password-admin', data),
-  forgotPassword: (data) => api.post('/auth/forgot-password', data),
-  verifyResetCode: (data) => api.post('/auth/verify-reset-code', data),
+  getPreguntas: () => api.get('/auth/preguntas-seguridad'),
+  checkPregunta: (data) => api.post('/auth/check-pregunta', data),
+  recoverPassword: (data) => api.post('/auth/recover-password', data),
 };
 
 export const users = {

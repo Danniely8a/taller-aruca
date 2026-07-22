@@ -21,11 +21,14 @@ def create_user():
         nombre=data['nombre'],
         correo=data['correo'],
         telefono=data.get('telefono', ''),
+        pregunta_seguridad=data.get('pregunta_seguridad', ''),
         rol=data['rol'],
         permisos=data.get('permisos', ''),
         activo=data.get('activo', True)
     )
     user.set_password(data['contrasena'])
+    if data.get('respuesta_seguridad'):
+        user.set_respuesta_seguridad(data['respuesta_seguridad'])
     db.session.add(user)
     db.session.commit()
     return jsonify(user.to_dict()), 201
@@ -38,11 +41,14 @@ def update_user(id):
     user.nombre = data.get('nombre', user.nombre)
     user.correo = data.get('correo', user.correo)
     user.telefono = data.get('telefono', user.telefono)
+    user.pregunta_seguridad = data.get('pregunta_seguridad', user.pregunta_seguridad)
     user.rol = data.get('rol', user.rol)
     user.permisos = data.get('permisos', user.permisos)
     user.activo = data.get('activo', user.activo)
     if data.get('contrasena'):
         user.set_password(data['contrasena'])
+    if data.get('respuesta_seguridad'):
+        user.set_respuesta_seguridad(data['respuesta_seguridad'])
     db.session.commit()
     return jsonify(user.to_dict())
 
