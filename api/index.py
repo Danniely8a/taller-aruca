@@ -71,6 +71,29 @@ def health():
 try:
     with app.app_context():
         db.create_all()
+        
+        # Add missing columns if they don't exist
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        columns = [c['name'] for c in inspector.get_columns('users')]
+        
+        alter_statements = []
+        if 'telefono' not in columns:
+            alter_statements.append("ALTER TABLE users ADD COLUMN telefono VARCHAR(20)")
+        if 'pregunta_seguridad' not in columns:
+            alter_statements.append("ALTER TABLE users ADD COLUMN pregunta_seguridad VARCHAR(200)")
+        if 'respuesta_seguridad' not in columns:
+            alter_statements.append("ALTER TABLE users ADD COLUMN respuesta_seguridad VARCHAR(200)")
+        
+        for stmt in alter_statements:
+            try:
+                db.session.execute(text(stmt))
+                db.session.commit()
+                print(f"OK: {stmt}")
+            except Exception as e:
+                print(f"Skip: {stmt} -> {e}")
+                db.session.rollback()
+        
         if User.query.count() == 0:
             usuarios = [
                 {'nombre': 'Alberto Bonetti', 'correo': 'alberto@aruca.com', 'rol': 'Gerente General'},
@@ -95,11 +118,25 @@ def debug_db():
     try:
         with app.app_context():
             db.create_all()
-            from sqlalchemy import inspect
+            from sqlalchemy import inspect, text
             inspector = inspect(db.engine)
+            columns = [c['name'] for c in inspector.get_columns('users')]
+            alter_statements = []
+            if 'telefono' not in columns:
+                alter_statements.append("ALTER TABLE users ADD COLUMN telefono VARCHAR(20)")
+            if 'pregunta_seguridad' not in columns:
+                alter_statements.append("ALTER TABLE users ADD COLUMN pregunta_seguridad VARCHAR(200)")
+            if 'respuesta_seguridad' not in columns:
+                alter_statements.append("ALTER TABLE users ADD COLUMN respuesta_seguridad VARCHAR(200)")
+            for stmt in alter_statements:
+                try:
+                    db.session.execute(text(stmt))
+                    db.session.commit()
+                except:
+                    db.session.rollback()
             tables = inspector.get_table_names()
             user_count = User.query.count()
-            return jsonify({'tables': tables, 'users': user_count})
+            return jsonify({'tables': tables, 'users': user_count, 'columns': columns})
     except Exception as e:
         import traceback
         return jsonify({'error': str(e), 'trace': traceback.format_exc()})
@@ -109,6 +146,16 @@ def seed():
     try:
         with app.app_context():
             db.create_all()
+            from sqlalchemy import text, inspect as sa_inspect
+            inspector = sa_inspect(db.engine)
+            columns = [c['name'] for c in inspector.get_columns('users')]
+            for col, typ in [('telefono', 'VARCHAR(20)'), ('pregunta_seguridad', 'VARCHAR(200)'), ('respuesta_seguridad', 'VARCHAR(200)')]:
+                if col not in columns:
+                    try:
+                        db.session.execute(text(f"ALTER TABLE users ADD COLUMN {col} {typ}"))
+                        db.session.commit()
+                    except:
+                        db.session.rollback()
             if User.query.count() == 0:
                 usuarios = [
                     {'nombre': 'Alberto Bonetti', 'correo': 'alberto@aruca.com', 'rol': 'Gerente General'},
