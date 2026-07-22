@@ -57,8 +57,8 @@ export default function Login() {
             {loading ? 'Ingresando...' : 'Ingresar al Sistema'}
           </button>
         </form>
-        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <Link to="/forgot-password" style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none' }}>
+        <div style={{ textAlign: 'center', marginTop: '20px', padding: '12px', background: 'var(--primary-bg)', borderRadius: '10px' }}>
+          <Link to="/forgot-password" style={{ color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>
             🔑 ¿Olvidaste tu contraseña?
           </Link>
         </div>
