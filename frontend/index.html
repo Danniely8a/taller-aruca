@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Taller Aruca" />
     <link rel="apple-touch-icon" href="/logo_aruca.png" />
+    <link rel="manifest" href="/manifest.json" />
     <title>Taller Aruca - Sistema de Recepción</title>
     <link rel="icon" type="image/png" href="/logo_aruca.png" />
   </head>
@@ -17,5 +18,10 @@
     <div id="root"></div>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+    </script>
   </body>
 </html>
