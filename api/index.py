@@ -24,6 +24,8 @@ database_url = os.getenv('DATABASE_URL')
 if database_url:
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
     database_url = database_url.replace('%24', '$')
+    if '?' not in database_url:
+        database_url += '?sslmode=require'
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(backend_path, 'taller_maquinas.db')
@@ -82,3 +84,17 @@ except Exception as e:
     import traceback
     print(f"DB Init Error: {e}")
     traceback.print_exc()
+
+@app.route('/api/debug-db', methods=['GET'])
+def debug_db():
+    try:
+        with app.app_context():
+            db.create_all()
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            user_count = User.query.count()
+            return jsonify({'tables': tables, 'users': user_count})
+    except Exception as e:
+        import traceback
+        return jsonify({'error': str(e), 'trace': traceback.format_exc()})
