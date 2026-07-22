@@ -30,7 +30,8 @@ class User(UserMixin, db.Model):
     fecha_registro = db.Column(db.DateTime, default=now_ve)
 
     def set_password(self, password):
-        self.contrasena = bcrypt.generate_password_hash(password).decode('utf-8')
+        result = bcrypt.generate_password_hash(password)
+        self.contrasena = result if isinstance(result, str) else result.decode('utf-8')
 
     def check_password(self, password):
         return bcrypt.check_password_hash(self.contrasena, password)
