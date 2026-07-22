@@ -97,6 +97,10 @@ export default function Layout() {
             </div>
             <NotificationBell />
           </div>
+          <NavLink to="/cambiar-contrasena" className={({ isActive }) => isActive ? 'active' : ''} onClick={() => setSidebarOpen(false)}>
+            <span className="nav-icon">🔑</span>
+            Cambiar Contraseña
+          </NavLink>
           <button onClick={handleLogout} className="btn-logout">
             Cerrar Sesión
           </button>

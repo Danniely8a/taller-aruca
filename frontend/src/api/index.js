@@ -19,6 +19,10 @@ export const auth = {
   login: (data) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),
+  changePassword: (data) => api.put('/auth/change-password', data),
+  resetPasswordAdmin: (data) => api.put('/auth/reset-password-admin', data),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  verifyResetCode: (data) => api.post('/auth/verify-reset-code', data),
 };
 
 export const users = {

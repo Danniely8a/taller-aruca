@@ -2,6 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 import bcrypt as _bcrypt
 from flask_login import UserMixin
 from utils import now_ve
+import random
+import string
 
 db = SQLAlchemy()
 
@@ -24,6 +26,7 @@ class User(UserMixin, db.Model):
     nombre = db.Column(db.String(100), nullable=False)
     correo = db.Column(db.String(120), unique=True, nullable=False)
     contrasena = db.Column(db.String(200), nullable=False)
+    telefono = db.Column(db.String(20), nullable=True)
     rol = db.Column(db.String(50), nullable=False)
     permisos = db.Column(db.Text, nullable=True)
     activo = db.Column(db.Boolean, default=True)
@@ -41,8 +44,24 @@ class User(UserMixin, db.Model):
             'id': self.id,
             'nombre': self.nombre,
             'correo': self.correo,
+            'telefono': self.telefono,
             'rol': self.rol,
             'permisos': self.permisos,
             'activo': self.activo,
             'fecha_registro': self.fecha_registro.isoformat() if self.fecha_registro else None
         }
+
+
+class PasswordResetCode(db.Model):
+    __tablename__ = 'password_reset_codes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    code = db.Column(db.String(6), nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False)
+    fecha_creacion = db.Column(db.DateTime, default=now_ve)
+
+    @staticmethod
+    def generate_code():
+        return ''.join(random.choices(string.digits, k=6))

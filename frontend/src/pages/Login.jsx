@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -56,6 +57,11 @@ export default function Login() {
             {loading ? 'Ingresando...' : 'Ingresar al Sistema'}
           </button>
         </form>
+        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <Link to="/forgot-password" style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none' }}>
+            🔑 ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
         <p className="login-footer">
           Contraseña por defecto: 123456
         </p>

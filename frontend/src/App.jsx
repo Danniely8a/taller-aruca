@@ -14,6 +14,8 @@ import Escaner from './pages/Escaner';
 import MisOrdenes from './pages/MisOrdenes';
 import PagosPage from './pages/PagosPage';
 import GenesisPage from './pages/GenesisPage';
+import CambiarContrasena from './pages/CambiarContrasena';
+import ForgotPassword from './pages/ForgotPassword';
 import Layout from './components/Layout';
 
 class ErrorBoundary extends Component {
@@ -53,6 +55,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={esCarlos ? <Navigate to="/mis-ordenes" /> : <Recepcion />} />
         <Route path="dashboard" element={esCarlos ? <Navigate to="/mis-ordenes" /> : <Dashboard />} />
@@ -65,6 +68,7 @@ function AppRoutes() {
         <Route path="escaner" element={esCarlos ? <Navigate to="/mis-ordenes" /> : <Escaner />} />
         <Route path="pagos" element={esCarlos ? <Navigate to="/mis-ordenes" /> : <PagosPage />} />
         <Route path="genesis" element={<GenesisPage />} />
+        <Route path="cambiar-contrasena" element={<CambiarContrasena />} />
       </Route>
     </Routes>
   );

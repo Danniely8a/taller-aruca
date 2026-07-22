@@ -8,7 +8,7 @@ export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ nombre: '', correo: '', contrasena: '', rol: 'Recepción / Ventas', activo: true });
+  const [form, setForm] = useState({ nombre: '', correo: '', telefono: '', contrasena: '', rol: 'Recepción / Ventas', activo: true });
 
   const ROLES = ['Gerente General', 'Supervisor', 'Técnico', 'Recepción / Ventas'];
 
@@ -25,7 +25,7 @@ export default function Usuarios() {
       if (editing) { await users.update(editing.id, form); toast.success('Usuario actualizado'); }
       else { await users.create(form); toast.success('Usuario creado'); }
       setShowModal(false);
-      setForm({ nombre: '', correo: '', contrasena: '', rol: 'Recepción / Ventas', activo: true });
+      setForm({ nombre: '', correo: '', telefono: '', contrasena: '', rol: 'Recepción / Ventas', activo: true });
       setEditing(null);
       loadUsuarios();
     } catch (err) {
@@ -35,7 +35,7 @@ export default function Usuarios() {
 
   const handleEdit = (u) => {
     setEditing(u);
-    setForm({ nombre: u.nombre, correo: u.correo, contrasena: '', rol: u.rol, activo: u.activo });
+    setForm({ nombre: u.nombre, correo: u.correo, telefono: u.telefono || '', contrasena: '', rol: u.rol, activo: u.activo });
     setShowModal(true);
   };
 
@@ -93,6 +93,11 @@ export default function Usuarios() {
               <div className="form-group">
                 <label className="label-required">Correo</label>
                 <input type="email" value={form.correo} onChange={(e) => setForm({ ...form, correo: e.target.value })} required />
+              </div>
+              <div className="form-group">
+                <label>Teléfono (WhatsApp)</label>
+                <input value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} placeholder="+58 412 1234567" />
+                <small style={{ color: 'var(--gray-400)' }}>Para recuperación de contraseña por WhatsApp</small>
               </div>
               <div className="form-group">
                 <label>{editing ? 'Nueva Contraseña' : 'Contraseña'}</label>

@@ -20,6 +20,7 @@ def create_user():
     user = User(
         nombre=data['nombre'],
         correo=data['correo'],
+        telefono=data.get('telefono', ''),
         rol=data['rol'],
         permisos=data.get('permisos', ''),
         activo=data.get('activo', True)
@@ -36,6 +37,7 @@ def update_user(id):
     data = request.get_json()
     user.nombre = data.get('nombre', user.nombre)
     user.correo = data.get('correo', user.correo)
+    user.telefono = data.get('telefono', user.telefono)
     user.rol = data.get('rol', user.rol)
     user.permisos = data.get('permisos', user.permisos)
     user.activo = data.get('activo', user.activo)
