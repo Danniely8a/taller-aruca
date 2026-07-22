@@ -19,7 +19,7 @@ def setup_preguntas_bulk():
     pregunta_default = data.get('pregunta', PREGUNTAS_SEGURIDAD[0])
     respuesta_default = data.get('respuesta', 'aruca2026')
 
-    users_without = User.query.filter_by(pregunta_seguridad=None).all()
+    users_without = User.query.filter(User.pregunta_seguridad.is_(None)).all()
     count = 0
     for user in users_without:
         user.pregunta_seguridad = pregunta_default
