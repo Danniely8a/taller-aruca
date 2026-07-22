@@ -24,9 +24,14 @@ database_url = os.getenv('DATABASE_URL')
 if database_url:
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
     database_url = database_url.replace('%24', '$')
-    if '?' not in database_url:
+    if '?' in database_url:
+        database_url += '&sslmode=require'
+    else:
         database_url += '?sslmode=require'
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'connect_args': {'sslmode': 'require', 'connect_timeout': 10}
+    }
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(backend_path, 'taller_maquinas.db')
 
@@ -95,6 +100,31 @@ def debug_db():
             tables = inspector.get_table_names()
             user_count = User.query.count()
             return jsonify({'tables': tables, 'users': user_count})
+    except Exception as e:
+        import traceback
+        return jsonify({'error': str(e), 'trace': traceback.format_exc()})
+
+@app.route('/api/seed', methods=['GET'])
+def seed():
+    try:
+        with app.app_context():
+            db.create_all()
+            if User.query.count() == 0:
+                usuarios = [
+                    {'nombre': 'Alberto Bonetti', 'correo': 'alberto@aruca.com', 'rol': 'Gerente General'},
+                    {'nombre': 'Eduardo Reinosa', 'correo': 'eduardo@aruca.com', 'rol': 'Técnico'},
+                    {'nombre': 'Hernán Rojas', 'correo': 'hernan@aruca.com', 'rol': 'Supervisor'},
+                    {'nombre': 'Daniely Ochoa', 'correo': 'daniely@aruca.com', 'rol': 'Recepción / Ventas'},
+                    {'nombre': 'Carlos Perez', 'correo': 'carlos@gmail.com', 'rol': 'Técnico'},
+                    {'nombre': 'Genesis', 'correo': 'genesis@aruca.com', 'rol': 'Pagos'},
+                ]
+                for u in usuarios:
+                    user = User(nombre=u['nombre'], correo=u['correo'], rol=u['rol'])
+                    user.set_password('123456')
+                    db.session.add(user)
+                db.session.commit()
+                return jsonify({'message': 'Seed completo', 'users': User.query.count()})
+            return jsonify({'message': 'Ya existen usuarios', 'users': User.query.count()})
     except Exception as e:
         import traceback
         return jsonify({'error': str(e), 'trace': traceback.format_exc()})
