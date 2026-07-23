@@ -1,7 +1,6 @@
 import sys
 import os
 import traceback
-import json
 
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend'))
 sys.path.insert(0, backend_path)
@@ -157,26 +156,6 @@ def seed():
                         db.session.commit()
                     except:
                         db.session.rollback()
-        # Crear bucket de Supabase Storage si no existe
-        try:
-            from supabase_storage import _get_config
-            import urllib.request as _urllib_req
-            import urllib.error as _urllib_err
-            url, key = _get_config()
-            if url and key:
-                req = _urllib_req.Request(f'{url}/storage/v1/bucket', headers={'Authorization': f'Bearer {key}', 'apikey': key})
-                buckets_res = _urllib_req.urlopen(req)
-                bucket_names = [b['name'] for b in json.loads(buckets_res.read())]
-                if 'fotos' not in bucket_names:
-                    create_data = json.dumps({'id': 'fotos', 'public': True}).encode()
-                    create_req = _urllib_req.Request(f'{url}/storage/v1/bucket', data=create_data, headers={'Authorization': f'Bearer {key}', 'apikey': key, 'Content-Type': 'application/json'}, method='POST')
-                    _urllib_req.urlopen(create_req)
-                    print("OK: Bucket 'fotos' creado")
-                else:
-                    print("OK: Bucket 'fotos' ya existe")
-        except Exception as e:
-            print(f"Skip bucket: {e}")
-        
         if User.query.count() == 0:
                 usuarios = [
                     {'nombre': 'Alberto Bonetti', 'correo': 'alberto@aruca.com', 'rol': 'Gerente General'},

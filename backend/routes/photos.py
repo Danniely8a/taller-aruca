@@ -1,8 +1,7 @@
-from flask import Blueprint, request, jsonify, redirect
+from flask import Blueprint, request, jsonify, redirect, Response
 from models.photo import Photo, db
 from models.work_order import WorkOrder
 from .auth import role_required
-from supabase_storage import upload_to_storage, delete_from_storage, get_public_url, download_file
 import os
 import uuid
 
@@ -22,6 +21,24 @@ CONTENT_TYPES = {
     'gif': 'image/gif', 'webp': 'image/webp', 'pdf': 'application/pdf',
 }
 
+def _get_storage():
+    from supabase_storage import upload_to_storage, delete_from_storage, get_public_url, download_file
+    return upload_to_storage, delete_from_storage, get_public_url, download_file
+
+def _fallback_save(file_bytes, filename):
+    filepath = os.path.join(LOCAL_FOLDER, filename)
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    with open(filepath, 'wb') as f:
+        f.write(file_bytes)
+
+def _fallback_url(filename):
+    return f'/api/photos/uploads/{filename}'
+
+def _fallback_read(filename):
+    filepath = os.path.join(LOCAL_FOLDER, filename)
+    with open(filepath, 'rb') as f:
+        return f.read()
+
 @photos_bp.route('/<int:order_id>', methods=['POST'])
 @role_required('Gerente General', 'Recepción / Ventas')
 def upload_photo(order_id):
@@ -38,6 +55,7 @@ def upload_photo(order_id):
     existing = Photo.query.filter_by(orden_trabajo_id=order_id).first()
     if existing:
         try:
+            _, delete_from_storage, _, _ = _get_storage()
             delete_from_storage(BUCKET, existing.ruta_foto)
         except:
             pass
@@ -49,9 +67,13 @@ def upload_photo(order_id):
     content_type = CONTENT_TYPES.get(ext, 'image/jpeg')
 
     try:
+        upload_to_storage, _, _, _ = _get_storage()
         upload_to_storage(BUCKET, filename, file_bytes, content_type)
     except Exception as e:
-        return jsonify({'error': f'Error al subir foto: {str(e)}'}), 500
+        try:
+            _fallback_save(file_bytes, filename)
+        except Exception as e2:
+            return jsonify({'error': f'Error al subir foto: {str(e)} / fallback: {str(e2)}'}), 500
 
     photo = Photo(orden_trabajo_id=order_id, ruta_foto=filename)
     db.session.add(photo)
@@ -65,17 +87,30 @@ def get_photo(order_id):
     if not photo:
         return jsonify({'error': 'No hay foto asociada'}), 404
     data = photo.to_dict()
-    data['url'] = get_public_url(BUCKET, photo.ruta_foto)
+    try:
+        _, _, get_public_url, _ = _get_storage()
+        data['url'] = get_public_url(BUCKET, photo.ruta_foto)
+    except:
+        data['url'] = _fallback_url(photo.ruta_foto)
     return jsonify(data)
 
 @photos_bp.route('/uploads/<path:filename>')
 def serve_photo(filename):
     try:
+        _, _, _, download_file = _get_storage()
         file_bytes = download_file(BUCKET, filename)
         ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'jpeg'
         content_type = CONTENT_TYPES.get(ext, 'image/jpeg')
-        from flask import Response
         return Response(file_bytes, content_type=content_type)
     except:
-        url = get_public_url(BUCKET, filename)
-        return redirect(url)
+        try:
+            file_bytes = _fallback_read(filename)
+            ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'jpeg'
+            content_type = CONTENT_TYPES.get(ext, 'image/jpeg')
+            return Response(file_bytes, content_type=content_type)
+        except:
+            try:
+                _, _, get_public_url, _ = _get_storage()
+                return redirect(get_public_url(BUCKET, filename))
+            except:
+                return jsonify({'error': 'Foto no encontrada'}), 404

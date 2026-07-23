@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify, redirect
 from models.payment import Payment, db
 from models.work_order import WorkOrder
 from .auth import role_required
-from supabase_storage import upload_to_storage, delete_from_storage, get_public_url, download_file
 import os
 import uuid
 
@@ -30,7 +29,11 @@ def get_payments(order_id):
     for p in payments:
         d = p.to_dict()
         if d.get('comprobante_ruta'):
-            d['comprobante_url'] = get_public_url(BUCKET, d['comprobante_ruta'])
+            try:
+                from supabase_storage import get_public_url
+                d['comprobante_url'] = get_public_url(BUCKET, d['comprobante_ruta'])
+            except:
+                d['comprobante_url'] = f'/api/photos/uploads/{d["comprobante_ruta"]}'
         result.append(d)
     return jsonify({'pagos': result, 'total_pagado': total})
 
@@ -53,9 +56,13 @@ def create_payment(order_id):
             file_bytes = file.read()
             content_type = CONTENT_TYPES.get(ext, 'application/pdf')
             try:
+                from supabase_storage import upload_to_storage
                 upload_to_storage(BUCKET, comprobante_filename, file_bytes, content_type)
             except Exception as e:
-                return jsonify({'error': f'Error al subir comprobante: {str(e)}'}), 500
+                filepath = os.path.join(LOCAL_FOLDER, comprobante_filename)
+                os.makedirs(os.path.dirname(filepath), exist_ok=True)
+                with open(filepath, 'wb') as f:
+                    f.write(file_bytes)
 
     payment = Payment(
         orden_trabajo_id=order_id,
@@ -74,6 +81,7 @@ def delete_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
     if payment.comprobante_ruta:
         try:
+            from supabase_storage import delete_from_storage
             delete_from_storage(BUCKET, payment.comprobante_ruta)
         except:
             pass
