@@ -1,0 +1,2 @@
+$body = @{correo="alberto@aruca.com"; contrasena="123456"} | ConvertTo-Json
+Invoke-RestMethod -Uri "https://taller-aruca.vercel.app/api/auth/login" -Method POST -ContentType "application/json" -Body $body
