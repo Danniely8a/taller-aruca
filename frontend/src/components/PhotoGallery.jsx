@@ -37,6 +37,17 @@ export default function PhotoGallery({ photos = [], onDelete, canDelete = false 
               src={`/api/photos/uploads/${p.ruta_foto || p}`}
               alt={`Foto ${i + 1}`}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.style.background = '#f3f4f6';
+                e.target.parentElement.style.display = 'flex';
+                e.target.parentElement.style.alignItems = 'center';
+                e.target.parentElement.style.justifyContent = 'center';
+                const span = document.createElement('span');
+                span.textContent = '📷';
+                span.style.fontSize = '1.5rem';
+                e.target.parentElement.appendChild(span);
+              }}
             />
             {canDelete && onDelete && (
               <button

@@ -27,7 +27,7 @@ def upload_photo(order_id):
     if file.filename == '':
         return jsonify({'error': 'No se seleccionó archivo'}), 400
     if not allowed_file(file.filename):
-        return jsonify({'error': 'Tipo de archivo no permitido'}), 400
+        return jsonify({'error': 'Tipo de archivo no permitido. Use: PNG, JPG, GIF, WEBP'}), 400
 
     existing = Photo.query.filter_by(orden_trabajo_id=order_id).first()
     if existing:
@@ -39,7 +39,11 @@ def upload_photo(order_id):
     ext = file.filename.rsplit('.', 1)[1].lower()
     filename = f"{uuid.uuid4().hex}.{ext}"
     filepath = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(filepath)
+
+    try:
+        file.save(filepath)
+    except Exception as e:
+        return jsonify({'error': f'Error al guardar archivo: {str(e)}'}), 500
 
     photo = Photo(
         orden_trabajo_id=order_id,
@@ -59,4 +63,7 @@ def get_photo(order_id):
 
 @photos_bp.route('/uploads/<filename>')
 def serve_photo(filename):
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    if not os.path.exists(filepath):
+        return jsonify({'error': 'Foto no disponible en este servidor'}), 404
     return send_from_directory(UPLOAD_FOLDER, filename)
