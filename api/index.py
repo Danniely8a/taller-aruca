@@ -1,6 +1,7 @@
 import sys
 import os
 import traceback
+import json
 
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend'))
 sys.path.insert(0, backend_path)
@@ -158,18 +159,21 @@ def seed():
                         db.session.rollback()
         # Crear bucket de Supabase Storage si no existe
         try:
-            from supabase_storage import _get_config, _headers
-            import requests as _req
+            from supabase_storage import _get_config
+            import urllib.request as _urllib_req
+            import urllib.error as _urllib_err
             url, key = _get_config()
             if url and key:
-                buckets_res = _req.get(f'{url}/storage/v1/bucket', headers=_headers())
-                if buckets_res.status_code == 200:
-                    bucket_names = [b['name'] for b in buckets_res.json()]
-                    if 'fotos' not in bucket_names:
-                        create_res = _req.post(f'{url}/storage/v1/bucket', headers={**_headers(), 'Content-Type': 'application/json'}, json={'id': 'fotos', 'public': True})
-                        print(f"OK: Bucket create -> {create_res.status_code}")
-                    else:
-                        print("OK: Bucket 'fotos' ya existe")
+                req = _urllib_req.Request(f'{url}/storage/v1/bucket', headers={'Authorization': f'Bearer {key}', 'apikey': key})
+                buckets_res = _urllib_req.urlopen(req)
+                bucket_names = [b['name'] for b in json.loads(buckets_res.read())]
+                if 'fotos' not in bucket_names:
+                    create_data = json.dumps({'id': 'fotos', 'public': True}).encode()
+                    create_req = _urllib_req.Request(f'{url}/storage/v1/bucket', data=create_data, headers={'Authorization': f'Bearer {key}', 'apikey': key, 'Content-Type': 'application/json'}, method='POST')
+                    _urllib_req.urlopen(create_req)
+                    print("OK: Bucket 'fotos' creado")
+                else:
+                    print("OK: Bucket 'fotos' ya existe")
         except Exception as e:
             print(f"Skip bucket: {e}")
         

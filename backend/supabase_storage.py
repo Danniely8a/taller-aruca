@@ -1,5 +1,7 @@
 import os
-import requests
+import urllib.request
+import urllib.error
+import json
 
 SUPABASE_URL = None
 SUPABASE_KEY = None
@@ -11,24 +13,33 @@ def _get_config():
         SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_KEY', '')
     return SUPABASE_URL, SUPABASE_KEY
 
-def _headers():
+def _request(method, url, data=None, headers=None):
+    if headers is None:
+        headers = {}
     url, key = _get_config()
-    return {
-        'Authorization': f'Bearer {key}',
-        'apikey': key,
-    }
+    headers.setdefault('Authorization', f'Bearer {key}')
+    headers.setdefault('apikey', key)
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req) as resp:
+        return resp.read()
 
 def upload_to_storage(bucket, path, file_bytes, content_type='image/jpeg'):
     url, key = _get_config()
     if not url or not key:
         raise Exception('Supabase no configurado')
-    res = requests.post(
-        f'{url}/storage/v1/object/{bucket}/{path}',
-        headers={**_headers(), 'Content-Type': content_type},
-        data=file_bytes
-    )
-    if res.status_code not in (200, 201):
-        raise Exception(f'Upload failed: {res.text}')
+    full_url = f'{url}/storage/v1/object/{bucket}/{path}'
+    headers = {
+        'Authorization': f'Bearer {key}',
+        'apikey': key,
+        'Content-Type': content_type,
+    }
+    req = urllib.request.Request(full_url, data=file_bytes, headers=headers, method='POST')
+    try:
+        with urllib.request.urlopen(req) as resp:
+            pass
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        raise Exception(f'Upload failed ({e.code}): {body}')
     return path
 
 def delete_from_storage(bucket, path):
@@ -36,10 +47,11 @@ def delete_from_storage(bucket, path):
     if not url or not key:
         return
     try:
-        requests.delete(
-            f'{url}/storage/v1/object/{bucket}/{path}',
-            headers=_headers()
-        )
+        full_url = f'{url}/storage/v1/object/{bucket}/{path}'
+        headers = {'Authorization': f'Bearer {key}', 'apikey': key}
+        req = urllib.request.Request(full_url, headers=headers, method='DELETE')
+        with urllib.request.urlopen(req):
+            pass
     except:
         pass
 
@@ -53,10 +65,8 @@ def download_file(bucket, path):
     url, key = _get_config()
     if not url or not key:
         raise Exception('Supabase no configurado')
-    res = requests.get(
-        f'{url}/storage/v1/object/{bucket}/{path}',
-        headers=_headers()
-    )
-    if res.status_code != 200:
-        raise Exception(f'Download failed: {res.text}')
-    return res.content
+    full_url = f'{url}/storage/v1/object/{bucket}/{path}'
+    headers = {'Authorization': f'Bearer {key}', 'apikey': key}
+    req = urllib.request.Request(full_url, headers=headers)
+    with urllib.request.urlopen(req) as resp:
+        return resp.read()
