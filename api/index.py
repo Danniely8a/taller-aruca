@@ -156,22 +156,22 @@ def seed():
                         db.session.commit()
                     except:
                         db.session.rollback()
-        if User.query.count() == 0:
-            usuarios = [
-                {'nombre': 'Alberto Bonetti', 'correo': 'alberto@aruca.com', 'rol': 'Gerente General'},
-                {'nombre': 'Eduardo Reinosa', 'correo': 'eduardo@aruca.com', 'rol': 'Técnico'},
-                {'nombre': 'Hernán Rojas', 'correo': 'hernan@aruca.com', 'rol': 'Supervisor'},
-                {'nombre': 'Daniely Ochoa', 'correo': 'daniely@aruca.com', 'rol': 'Recepción / Ventas'},
-                {'nombre': 'Carlos Perez', 'correo': 'carlos@gmail.com', 'rol': 'Técnico'},
-                {'nombre': 'Genesis', 'correo': 'genesis@aruca.com', 'rol': 'Pagos'},
-            ]
-            for u in usuarios:
-                user = User(nombre=u['nombre'], correo=u['correo'], rol=u['rol'])
-                user.set_password('123456')
-                db.session.add(user)
-            db.session.commit()
-            return jsonify({'message': 'Seed completo', 'users': User.query.count()})
-        return jsonify({'message': 'Ya existen usuarios', 'users': User.query.count()})
+            if User.query.count() == 0:
+                usuarios = [
+                    {'nombre': 'Alberto Bonetti', 'correo': 'alberto@aruca.com', 'rol': 'Gerente General'},
+                    {'nombre': 'Eduardo Reinosa', 'correo': 'eduardo@aruca.com', 'rol': 'Técnico'},
+                    {'nombre': 'Hernán Rojas', 'correo': 'hernan@aruca.com', 'rol': 'Supervisor'},
+                    {'nombre': 'Daniely Ochoa', 'correo': 'daniely@aruca.com', 'rol': 'Recepción / Ventas'},
+                    {'nombre': 'Carlos Perez', 'correo': 'carlos@gmail.com', 'rol': 'Técnico'},
+                    {'nombre': 'Genesis', 'correo': 'genesis@aruca.com', 'rol': 'Pagos'},
+                ]
+                for u in usuarios:
+                    user = User(nombre=u['nombre'], correo=u['correo'], rol=u['rol'])
+                    user.set_password('123456')
+                    db.session.add(user)
+                db.session.commit()
+                return jsonify({'message': 'Seed completo', 'users': User.query.count()})
+            return jsonify({'message': 'Ya existen usuarios', 'users': User.query.count()})
     except Exception as e:
         import traceback
         return jsonify({'error': str(e), 'trace': traceback.format_exc()})
