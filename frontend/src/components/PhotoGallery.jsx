@@ -34,7 +34,7 @@ export default function PhotoGallery({ photos = [], onDelete, canDelete = false 
             }}
           >
             <img
-              src={`/api/photos/uploads/${p.ruta_foto || p}`}
+              src={p.url || `/api/photos/uploads/${p.ruta_foto || p}`}
               alt={`Foto ${i + 1}`}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => {
@@ -90,7 +90,7 @@ export default function PhotoGallery({ photos = [], onDelete, canDelete = false 
           }}
         >
           <img
-            src={`/api/photos/uploads/${selected.ruta_foto || selected}`}
+            src={selected.url || `/api/photos/uploads/${selected.ruta_foto || selected}`}
             alt="Vista ampliada"
             style={{
               maxWidth: '90vw',

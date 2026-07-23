@@ -156,7 +156,22 @@ def seed():
                         db.session.commit()
                     except:
                         db.session.rollback()
-            if User.query.count() == 0:
+        # Crear bucket de Supabase Storage si no existe
+        from supabase_storage import get_supabase
+        sb = get_supabase()
+        if sb:
+            try:
+                buckets = sb.storage.list_buckets()
+                bucket_names = [b.name for b in buckets]
+                if 'fotos' not in bucket_names:
+                    sb.storage.create_bucket('fotos', {'public': True})
+                    print("OK: Bucket 'fotos' creado")
+                else:
+                    print("OK: Bucket 'fotos' ya existe")
+            except Exception as e:
+                print(f"Skip bucket: {e}")
+        
+        if User.query.count() == 0:
                 usuarios = [
                     {'nombre': 'Alberto Bonetti', 'correo': 'alberto@aruca.com', 'rol': 'Gerente General'},
                     {'nombre': 'Eduardo Reinosa', 'correo': 'eduardo@aruca.com', 'rol': 'Técnico'},

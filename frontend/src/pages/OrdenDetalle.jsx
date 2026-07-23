@@ -377,7 +377,7 @@ export default function OrdenDetalle() {
                       <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                         <span style={{ color: 'var(--gray-400)', fontSize: '0.75rem' }}>{new Date(p.fecha_pago).toLocaleDateString()}</span>
                         {p.comprobante_ruta && (
-                          <a href={`/api/photos/uploads/${p.comprobante_ruta}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '0.7rem' }}>Ver</a>
+                          <a href={p.comprobante_url || `/api/photos/uploads/${p.comprobante_ruta}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ padding: '2px 8px', fontSize: '0.7rem' }}>Ver</a>
                         )}
                         {hasPermission('Gerente General') && (
                           <button onClick={() => handleDeletePago(p.id)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.8rem' }}>✕</button>
