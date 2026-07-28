@@ -121,7 +121,6 @@ export default function Recepcion() {
         falla_reportada: '',
         prioridad: 'Normal',
       });
-      setItemSeleccionado('');
       setItemsSeleccionados([]);
       setBusquedaItem('');
       cargarOrdenes();

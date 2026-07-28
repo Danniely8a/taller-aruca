@@ -65,10 +65,13 @@ export const workOrders = {
   getEstados: () => api.get('/work-orders/estados'),
 };
 
+import compressImage from '../utils/compressImage';
+
 export const photos = {
-  upload: (orderId, file) => {
+  upload: async (orderId, file) => {
+    const compressed = await compressImage(file);
     const formData = new FormData();
-    formData.append('foto', file);
+    formData.append('foto', compressed);
     return api.post(`/photos/${orderId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
