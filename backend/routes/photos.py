@@ -75,12 +75,14 @@ def upload_photo(order_id):
     content_type = CONTENT_TYPES.get(ext, 'image/jpeg')
 
     upload_to_storage, _, _, _ = _try_storage()
+    uploaded_to_storage = False
     if upload_to_storage:
         try:
             upload_to_storage(BUCKET, filename, file_bytes, content_type)
+            uploaded_to_storage = True
         except Exception as e:
-            return jsonify({'error': f'Error al subir foto: {str(e)}'}), 500
-    else:
+            pass
+    if not uploaded_to_storage:
         try:
             _fallback_save(file_bytes, filename)
         except Exception as e:
