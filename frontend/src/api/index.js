@@ -72,9 +72,7 @@ export const photos = {
     const compressed = await compressImage(file);
     const formData = new FormData();
     formData.append('foto', compressed);
-    return api.post(`/photos/${orderId}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post(`/photos/${orderId}`, formData);
   },
   get: (orderId) => api.get(`/photos/${orderId}`),
 };
@@ -101,9 +99,7 @@ export const qr = {
 
 export const payments = {
   getByOrder: (orderId) => api.get(`/payments/${orderId}`),
-  create: (orderId, formData) => api.post(`/payments/${orderId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  create: (orderId, formData) => api.post(`/payments/${orderId}`, formData),
   delete: (paymentId) => api.delete(`/payments/${paymentId}`),
 };
 

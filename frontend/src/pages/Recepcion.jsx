@@ -137,7 +137,7 @@ export default function Recepcion() {
       toast.success('Foto subida');
       cargarOrdenes();
     } catch (err) {
-      toast.error('Error al subir foto');
+      toast.error(err.response?.data?.error || err.message || 'Error al subir foto');
     }
   };
 
