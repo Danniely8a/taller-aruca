@@ -6,7 +6,7 @@ backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ba
 sys.path.insert(0, backend_path)
 os.chdir(backend_path)
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_login import LoginManager
 from models.user import db, bcrypt, User
@@ -17,7 +17,10 @@ from routes import (
 )
 from routes.pagos_semanales import pagos_semanales_bp
 
-app = Flask(__name__)
+is_vercel = os.getenv('VERCEL') == '1'
+frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
+
+app = Flask(__name__, static_folder=frontend_dist, static_url_path='')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-aruca-2026')
 
 database_url = os.getenv('DATABASE_URL')
@@ -176,3 +179,12 @@ def seed():
     except Exception as e:
         import traceback
         return jsonify({'error': str(e), 'trace': traceback.format_exc()})
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path.startswith('api/') or path.startswith('ver/') or path.startswith('ot/'):
+        return jsonify({'error': 'Not found'}), 404
+    if path and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
