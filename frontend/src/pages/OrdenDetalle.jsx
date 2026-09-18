@@ -228,6 +228,12 @@ export default function OrdenDetalle() {
                 <p>{new Date(orden.fecha_ingreso).toLocaleString()}</p>
                 <p style={{ marginTop: '8px' }}><strong>Recepcionista</strong></p>
                 <p>{orden.recepcionista?.nombre}</p>
+                {orden.estado === 'Entregado' && orden.entregado_a && (
+                  <>
+                    <p style={{ marginTop: '8px', color: '#059669' }}><strong>Entregado a</strong></p>
+                    <p style={{ color: '#059669', fontWeight: 700 }}>{orden.entregado_a}</p>
+                  </>
+                )}
               </div>
             </div>
           </div>

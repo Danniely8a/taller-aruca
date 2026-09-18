@@ -47,6 +47,9 @@ export default function MisOrdenes() {
   const [diaSeleccionado, setDiaSeleccionado] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
   const printRef = useRef(null);
+  const [showEntregaModal, setShowEntregaModal] = useState(false);
+  const [entregaOrderId, setEntregaOrderId] = useState(null);
+  const [entregaNombre, setEntregaNombre] = useState('');
 
   useEffect(() => { cargarOrdenes(); }, []);
 
@@ -68,13 +71,42 @@ export default function MisOrdenes() {
 
   const { containerRef, refreshing, pullDistance } = usePullToRefresh(cargarOrdenes);
 
+  const esAfilado = user?.correo === 'carlos@gmail.com';
+
   const cambiarEstado = async (orderId, nuevoEstado) => {
+    if (nuevoEstado === 'Entregado' && esAfilado) {
+      setEntregaOrderId(orderId);
+      setEntregaNombre('');
+      setShowEntregaModal(true);
+      return;
+    }
     try {
       await workOrders.updateEstado(orderId, { nuevo_estado: nuevoEstado, usuario_id: user.id });
       toast.success(`Estado cambiado a: ${nuevoEstado}`);
       cargarOrdenes();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al cambiar estado');
+    }
+  };
+
+  const confirmarEntrega = async () => {
+    if (!entregaNombre.trim()) {
+      toast.error('Ingresa el nombre de quien recibe');
+      return;
+    }
+    try {
+      await workOrders.updateEstado(entregaOrderId, {
+        nuevo_estado: 'Entregado',
+        usuario_id: user.id,
+        entregado_a: entregaNombre.trim()
+      });
+      toast.success(`Entregado a: ${entregaNombre.trim()}`);
+      setShowEntregaModal(false);
+      setEntregaOrderId(null);
+      setEntregaNombre('');
+      cargarOrdenes();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al registrar entrega');
     }
   };
 
@@ -94,7 +126,6 @@ export default function MisOrdenes() {
     }
   };
 
-  const esAfilado = user?.correo === 'carlos@gmail.com';
   const tipoLabel = esAfilado ? 'Afilado' : 'Reparaciones';
   const ESTADOS_USUARIO = esAfilado ? ESTADOS_AFILADO : ESTADOS_REPARACION;
 
@@ -255,6 +286,11 @@ export default function MisOrdenes() {
                     <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', margin: '4px 0' }}>
                       <strong>Fecha:</strong> {formatearFecha(o.fecha_ingreso)}
                     </p>
+                    {o.estado === 'Entregado' && o.entregado_a && (
+                      <p style={{ fontSize: '0.85rem', color: '#059669', margin: '4px 0', fontWeight: 600 }}>
+                        <strong>Entregado a:</strong> {o.entregado_a}
+                      </p>
+                    )}
 
                     {items.length > 0 && (
                       <div style={{ marginTop: '12px', padding: '12px', background: todosListos ? '#f0fdf4' : 'var(--primary-bg)', borderRadius: '10px', border: todosListos ? '1px solid #86efac' : '1px solid var(--primary)' }}>
@@ -540,6 +576,32 @@ export default function MisOrdenes() {
           <button className="btn btn-primary btn-lg" onClick={handlePrint} style={{ width: '100%', marginTop: '16px' }}>
             🖨️ Imprimir Reporte
           </button>
+        </div>
+      )}
+
+      {showEntregaModal && (
+        <div className="modal-overlay" onClick={() => setShowEntregaModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Registrar Entrega</h2>
+            <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
+              Ingresa el nombre de la persona que recibe el equipo
+            </p>
+            <div className="form-group">
+              <label className="label-required">Nombre de quien recibe</label>
+              <input
+                type="text"
+                value={entregaNombre}
+                onChange={(e) => setEntregaNombre(e.target.value)}
+                placeholder="Ej: María López"
+                autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && confirmarEntrega()}
+              />
+            </div>
+            <div className="modal-actions">
+              <button type="button" className="btn btn-outline" onClick={() => setShowEntregaModal(false)}>Cancelar</button>
+              <button type="button" className="btn btn-primary" onClick={confirmarEntrega}>Confirmar Entrega</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

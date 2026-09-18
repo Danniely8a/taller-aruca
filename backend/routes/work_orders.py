@@ -246,6 +246,9 @@ def update_estado(id):
     estado_anterior = order.estado
     order.estado = nuevo_estado
 
+    if nuevo_estado == 'Entregado' and data.get('entregado_a'):
+        order.entregado_a = data['entregado_a']
+
     history = StatusHistory(
         orden_trabajo_id=order.id,
         estado_anterior=estado_anterior,

@@ -22,6 +22,7 @@ class WorkOrder(db.Model):
     tecnico_asignado_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     fecha_ingreso = db.Column(db.DateTime, default=now_ve)
     usuario_recepcion = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    entregado_a = db.Column(db.String(200), nullable=True)
 
     photo = db.relationship('Photo', backref='work_order', uselist=False, lazy=True)
     status_history = db.relationship('StatusHistory', backref='work_order', lazy=True)
@@ -50,5 +51,6 @@ class WorkOrder(db.Model):
             'equipo': self.equipment.to_dict() if self.equipment else None,
             'recepcionista': self.receiver.to_dict() if self.receiver else None,
             'tecnico_asignado': self.tecnico_asignado.to_dict() if self.tecnico_asignado else None,
-            'tecnico_asignado_id': self.tecnico_asignado_id
+            'tecnico_asignado_id': self.tecnico_asignado_id,
+            'entregado_a': self.entregado_a
         }
