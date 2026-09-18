@@ -447,13 +447,13 @@ export default function Recepcion() {
                   <tbody>
                     {ordenes.map((o) => (
                       <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/ordenes/${o.id}`)}>
-                        <td><strong style={{ color: 'var(--primary)' }}>{o.codigo_corto}</strong></td>
-                        <td>
+                        <td data-label="Código"><strong style={{ color: 'var(--primary)' }}>{o.codigo_corto}</strong></td>
+                        <td data-label="Cliente">
                           <div style={{ fontWeight: 500 }}>{o.cliente?.nombre}</div>
                           {o.cliente?.empresa && <small style={{ color: 'var(--gray-400)' }}>{o.cliente.empresa}</small>}
                         </td>
-                        <td><small>{o.tipo_servicio || 'Reparación'} - {o.equipo?.tipo_equipo} - {o.equipo?.marca}</small></td>
-                        <td><span className={`badge ${ESTADOS_COLORES[o.estado]}`}>{o.estado}</span></td>
+                        <td data-label="Equipo"><small>{o.tipo_servicio || 'Reparación'} - {o.equipo?.tipo_equipo} - {o.equipo?.marca}</small></td>
+                        <td data-label="Estado"><span className={`badge ${ESTADOS_COLORES[o.estado]}`}>{o.estado}</span></td>
                         <td>
                           <Link to={`/ordenes/${o.id}`} className="btn btn-primary btn-sm">Ver</Link>
                         </td>

@@ -55,8 +55,8 @@ export default function Clientes() {
           <tbody>
             {lista.map((c) => (
               <tr key={c.id}>
-                <td>{c.id}</td><td>{c.cedula_rif || '-'}</td><td style={{ fontWeight: 500 }}>{c.nombre}</td><td>{c.telefono}</td><td>{c.empresa || '-'}</td><td>{c.correo || '-'}</td>
-                <td>{new Date(c.fecha_registro).toLocaleDateString()}</td>
+                <td data-label="ID">{c.id}</td><td data-label="Cédula/RIF">{c.cedula_rif || '-'}</td><td data-label="Nombre" style={{ fontWeight: 500 }}>{c.nombre}</td><td data-label="Teléfono">{c.telefono}</td><td data-label="Empresa">{c.empresa || '-'}</td><td data-label="Correo">{c.correo || '-'}</td>
+                <td data-label="Registro">{new Date(c.fecha_registro).toLocaleDateString()}</td>
                 <td>
                   <button className="btn btn-primary btn-sm" onClick={() => handleEdit(c)}>Editar</button>{' '}
                   {hasPermission('Gerente General') && <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c.id)}>Eliminar</button>}

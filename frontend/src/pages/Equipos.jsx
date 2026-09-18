@@ -60,8 +60,8 @@ export default function Equipos() {
           <tbody>
             {lista.map((e) => (
               <tr key={e.id}>
-                <td>{e.id}</td><td>{getClienteNombre(e.cliente_id)}</td>
-                <td><span className="badge badge-primary">{e.tipo_equipo}</span></td><td>{e.marca}</td><td>{e.modelo}</td><td>{e.numero_serie || '-'}</td>
+                <td data-label="ID">{e.id}</td><td data-label="Cliente">{getClienteNombre(e.cliente_id)}</td>
+                <td data-label="Tipo"><span className="badge badge-primary">{e.tipo_equipo}</span></td><td data-label="Marca">{e.marca}</td><td data-label="Modelo">{e.modelo}</td><td data-label="N° Serie">{e.numero_serie || '-'}</td>
                 <td>
                   <button className="btn btn-primary btn-sm" onClick={() => handleEdit(e)}>Editar</button>{' '}
                   <button className="btn btn-danger btn-sm" onClick={() => handleDelete(e.id)}>Eliminar</button>

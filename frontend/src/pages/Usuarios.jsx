@@ -130,12 +130,12 @@ export default function Usuarios() {
           <tbody>
             {usuarios.map((u) => (
               <tr key={u.id}>
-                <td style={{ fontWeight: 500 }}>{u.nombre}</td>
-                <td>{u.correo}</td>
-                <td>{u.telefono || '-'}</td>
-                <td><span className="badge badge-primary">{u.rol}</span></td>
-                <td>{u.pregunta_seguridad ? '✅' : '❌'}</td>
-                <td>{u.activo ? 'Si' : 'No'}</td>
+                <td data-label="Nombre" style={{ fontWeight: 500 }}>{u.nombre}</td>
+                <td data-label="Correo">{u.correo}</td>
+                <td data-label="Teléfono">{u.telefono || '-'}</td>
+                <td data-label="Rol"><span className="badge badge-primary">{u.rol}</span></td>
+                <td data-label="Preg. Seg.">{u.pregunta_seguridad ? '✅' : '❌'}</td>
+                <td data-label="Activo">{u.activo ? 'Si' : 'No'}</td>
                 <td style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                   <button className="btn btn-primary btn-sm" onClick={() => handleEdit(u)}>Editar</button>
                   <button className="btn btn-outline btn-sm" onClick={() => openResetModal(u)} title="Resetear contraseña">🔑</button>

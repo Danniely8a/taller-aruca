@@ -163,13 +163,13 @@ export default function Ordenes() {
           <tbody>
             {filtered.map((o) => (
               <tr key={o.id}>
-                <td><strong style={{ color: 'var(--primary)' }}>{o.numero_ot}</strong></td>
-                <td>{o.codigo_corto}</td>
-                <td>{o.cliente?.nombre || '-'}</td>
-                <td><small>{o.equipo?.tipo_equipo} - {o.equipo?.marca}</small></td>
-                <td><span className={`badge ${ESTADOS_COLORES[o.estado]}`}>{o.estado}</span></td>
-                <td>{o.prioridad}</td>
-                <td>{new Date(o.fecha_ingreso).toLocaleDateString()}</td>
+                <td data-label="OT"><strong style={{ color: 'var(--primary)' }}>{o.numero_ot}</strong></td>
+                <td data-label="Código">{o.codigo_corto}</td>
+                <td data-label="Cliente">{o.cliente?.nombre || '-'}</td>
+                <td data-label="Equipo"><small>{o.equipo?.tipo_equipo} - {o.equipo?.marca}</small></td>
+                <td data-label="Estado"><span className={`badge ${ESTADOS_COLORES[o.estado]}`}>{o.estado}</span></td>
+                <td data-label="Prioridad">{o.prioridad}</td>
+                <td data-label="Fecha">{new Date(o.fecha_ingreso).toLocaleDateString()}</td>
                 <td>
                   <Link to={`/ordenes/${o.id}`} className="btn btn-primary btn-sm">Ver</Link>
                 </td>
