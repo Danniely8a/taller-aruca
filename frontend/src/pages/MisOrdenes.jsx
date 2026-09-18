@@ -584,7 +584,7 @@ export default function MisOrdenes() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>Registrar Entrega</h2>
             <p style={{ color: 'var(--gray-500)', marginBottom: '16px' }}>
-              Ingresa el nombre de la persona que recibe el equipo
+              Ingresa el nombre de la persona que recibe el afilado
             </p>
             <div className="form-group">
               <label className="label-required">Nombre de quien recibe</label>
