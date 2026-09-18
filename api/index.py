@@ -98,18 +98,15 @@ try:
                 print(f"Skip: {stmt} -> {e}")
                 db.session.rollback()
 
-        wo_columns = [c['name'] for c in inspector.get_columns('work_orders')]
-        wo_alter = []
-        if 'entregado_a' not in wo_columns:
-            wo_alter.append("ALTER TABLE work_orders ADD COLUMN entregado_a VARCHAR(200)")
-        for stmt in wo_alter:
-            try:
-                db.session.execute(text(stmt))
+        try:
+            wo_columns = [c['name'] for c in inspector.get_columns('work_orders')]
+            if 'entregado_a' not in wo_columns:
+                db.session.execute(text("ALTER TABLE work_orders ADD COLUMN entregado_a VARCHAR(200)"))
                 db.session.commit()
-                print(f"OK: {stmt}")
-            except Exception as e:
-                print(f"Skip: {stmt} -> {e}")
-                db.session.rollback()
+                print("OK: Added entregado_a to work_orders")
+        except Exception as e:
+            print(f"Skip work_orders migration: {e}")
+            db.session.rollback()
         
         if User.query.count() == 0:
             usuarios = [
