@@ -355,7 +355,7 @@ export default function MisOrdenes() {
                       </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' }}>
+                    <div className="mis-ordenes-actions" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' }}>
                       <button
                         className="btn btn-sm"
                         onClick={() => navigate(`/ordenes/${o.id}`)}

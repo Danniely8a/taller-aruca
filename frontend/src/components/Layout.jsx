@@ -12,6 +12,8 @@ const ALL_MENU_ITEMS = [
   { path: '/mis-ordenes', label: 'Mis Órdenes', icon: '⚙️', roles: ['Técnico'] },
 ];
 
+const MOBILE_NAV_MAX = 4;
+
 const MENU_OCULTO_CARLOS = ['/', '/dashboard', '/escaner', '/ordenes'];
 const MENU_OCULTO_EDUARDO = ['/ordenes'];
 
@@ -56,9 +58,28 @@ export default function Layout() {
     return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
   };
 
+  const menuItems = [...ALL_MENU_ITEMS, ...extraItems]
+    .filter(item => !item.roles || item.roles.includes(user?.rol))
+    .filter(item => !(user?.correo === 'carlos@gmail.com' && MENU_OCULTO_CARLOS.includes(item.path)))
+    .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && MENU_OCULTO_EDUARDO.includes(item.path)))
+    .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && item.path === '/pagos'))
+    .filter(item => !(user?.rol === 'Pagos' && !MENU_GENESIS.includes(item.path)));
+
+  const mobileNavItems = menuItems.slice(0, MOBILE_NAV_MAX);
+
   return (
     <div className="app-layout">
       {sidebarOpen && <div className="mobile-overlay" onClick={() => setSidebarOpen(false)} />}
+
+      <header className="mobile-header">
+        <button className="mobile-header-btn" onClick={() => setSidebarOpen(true)} aria-label="Menú">
+          ☰
+        </button>
+        <img src="/logo_aruca.png" alt="ARUCA" className="mobile-header-logo" />
+        <div className="mobile-header-actions">
+          <NotificationBell />
+        </div>
+      </header>
 
       <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-header">
@@ -66,13 +87,7 @@ export default function Layout() {
           <h2>Sistema de Recepción</h2>
         </div>
         <nav>
-          {[...ALL_MENU_ITEMS, ...extraItems]
-            .filter(item => !item.roles || item.roles.includes(user?.rol))
-            .filter(item => !(user?.correo === 'carlos@gmail.com' && MENU_OCULTO_CARLOS.includes(item.path)))
-            .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && MENU_OCULTO_EDUARDO.includes(item.path)))
-            .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && item.path === '/pagos'))
-            .filter(item => !(user?.rol === 'Pagos' && !MENU_GENESIS.includes(item.path)))
-            .map((item) => (
+          {menuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -112,11 +127,7 @@ export default function Layout() {
       </main>
 
       <nav className="mobile-bottom-nav">
-        {ALL_MENU_ITEMS
-          .filter(item => !item.roles || item.roles.includes(user?.rol))
-          .filter(item => !(user?.correo === 'carlos@gmail.com' && MENU_OCULTO_CARLOS.includes(item.path)))
-          .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && MENU_OCULTO_EDUARDO.includes(item.path)))
-          .map((item) => (
+        {mobileNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

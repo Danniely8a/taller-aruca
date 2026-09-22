@@ -112,7 +112,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div style={{
+        <div className="notification-dropdown" style={{
           position: 'absolute',
           top: '48px',
           right: 0,
