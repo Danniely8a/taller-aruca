@@ -80,6 +80,17 @@ export default function Ordenes() {
     }
   };
 
+  const handleEliminar = async (o) => {
+    if (!confirm(`¿Eliminar la orden ${o.codigo_corto}? Esta acción no se puede deshacer.`)) return;
+    try {
+      await workOrders.remove(o.id);
+      toast.success('Orden eliminada');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al eliminar orden');
+    }
+  };
+
   const filtered = ordenes.filter(o => {
     if (busqueda) {
       const q = busqueda.toLowerCase();
@@ -171,7 +182,12 @@ export default function Ordenes() {
                 <td data-label="Prioridad">{o.prioridad}</td>
                 <td data-label="Fecha">{new Date(o.fecha_ingreso).toLocaleDateString()}</td>
                 <td>
-                  <Link to={`/ordenes/${o.id}`} className="btn btn-primary btn-sm">Ver</Link>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <Link to={`/ordenes/${o.id}`} className="btn btn-primary btn-sm">Ver</Link>
+                    {hasPermission('Gerente General') && (
+                      <button className="btn btn-danger btn-sm" onClick={() => handleEliminar(o)}>Eliminar</button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

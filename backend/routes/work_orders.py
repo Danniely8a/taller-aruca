@@ -7,8 +7,12 @@ from models.status_history import StatusHistory
 from models.client import Client
 from models.equipment import Equipment
 from models.user import User
+from models.photo import Photo
+from models.payment import Payment
+from models.notification import Notification
 from .auth import role_required
 from datetime import datetime
+import os
 
 work_orders_bp = Blueprint('work_orders', __name__)
 
@@ -346,6 +350,51 @@ def update_work_order(id):
     order.falla_reportada = data.get('falla_reportada', order.falla_reportada)
     db.session.commit()
     return jsonify(order.to_dict())
+
+@work_orders_bp.route('/<int:id>', methods=['DELETE'])
+@role_required('Gerente General')
+def delete_work_order(id):
+    order = WorkOrder.query.get_or_404(id)
+
+    def _try_delete_storage(ruta):
+        try:
+            from supabase_storage import delete_from_storage
+            if delete_from_storage:
+                delete_from_storage('fotos', ruta)
+        except Exception:
+            pass
+
+    photo = Photo.query.filter_by(orden_trabajo_id=order.id).first()
+    if photo:
+        if photo.ruta_foto and photo.ruta_foto.startswith('http'):
+            _try_delete_storage(photo.ruta_foto)
+        else:
+            local = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', photo.ruta_foto or '')
+            if photo.ruta_foto and os.path.exists(local):
+                try:
+                    os.remove(local)
+                except Exception:
+                    pass
+        db.session.delete(photo)
+
+    for payment in Payment.query.filter_by(orden_trabajo_id=order.id).all():
+        if payment.comprobante_ruta:
+            if payment.comprobante_ruta.startswith('http'):
+                _try_delete_storage(payment.comprobante_ruta)
+            else:
+                local = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads', payment.comprobante_ruta)
+                if os.path.exists(local):
+                    try:
+                        os.remove(local)
+                    except Exception:
+                        pass
+        db.session.delete(payment)
+
+    StatusHistory.query.filter_by(orden_trabajo_id=order.id).delete()
+    Notification.query.filter_by(orden_trabajo_id=order.id).delete()
+    db.session.delete(order)
+    db.session.commit()
+    return jsonify({'message': f'Orden {order.codigo_corto} eliminada'})
 
 @work_orders_bp.route('/<int:id>/notas', methods=['PUT'])
 @role_required('Gerente General', 'Supervisor', 'Técnico')

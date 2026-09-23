@@ -166,6 +166,17 @@ export default function OrdenDetalle() {
     }
   };
 
+  const handleEliminarOrden = async () => {
+    if (!confirm('¿Eliminar esta orden de trabajo? Esta acción no se puede deshacer.')) return;
+    try {
+      await workOrders.remove(id);
+      toast.success('Orden eliminada');
+      navigate('/ordenes');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al eliminar orden');
+    }
+  };
+
   if (!orden) return (
     <div style={{ padding: '20px' }}>
       <SkeletonCard lines={4} />
@@ -195,6 +206,11 @@ export default function OrdenDetalle() {
           <button className="btn btn-outline" onClick={() => window.open(`/api/work-orders/${id}/comprobante`, '_blank')}>
             Comprobante Cliente
           </button>
+          {hasPermission('Gerente General') && (
+            <button className="btn btn-danger" onClick={handleEliminarOrden}>
+              Eliminar
+            </button>
+          )}
         </div>
       </div>
 

@@ -58,6 +58,7 @@ export const workOrders = {
   create: (data) => api.post('/work-orders/', data),
   recepcion: (data) => api.post('/work-orders/recepcion', data),
   update: (id, data) => api.put(`/work-orders/${id}`, data),
+  remove: (id) => api.delete(`/work-orders/${id}`),
   updateEstado: (id, data) => api.put(`/work-orders/${id}/estado`, data),
   updateNotas: (id, data) => api.put(`/work-orders/${id}/notas`, data),
   updateItemsListos: (id, data) => api.put(`/work-orders/${id}/items-listos`, data),
