@@ -13,8 +13,12 @@ const TIPOS_SERVICIO = ['Reparación', 'Afilado'];
 
 function obtenerTodosItems() {
   const items = [];
+  const vistos = new Set();
   for (const cat of catalogo.categorias) {
     for (const item of cat.items) {
+      const clave = item.trim().toUpperCase();
+      if (vistos.has(clave)) continue;
+      vistos.add(clave);
       items.push({ categoria: cat.nombre, item });
     }
   }
@@ -68,11 +72,12 @@ export default function Recepcion() {
   useEffect(() => {
     if (busquedaItem.length >= 2) {
       const q = busquedaItem.toLowerCase();
-      setItemsFiltrados(todosItems.filter(i => i.item.toLowerCase().includes(q) && !itemsSeleccionados.includes(i.item)).slice(0, 20));
+      const yaSeleccionados = new Set(itemsSeleccionados.map(s => s.item));
+      setItemsFiltrados(todosItems.filter(i => i.item.toLowerCase().includes(q) && !yaSeleccionados.has(i.item)).slice(0, 20));
     } else {
       setItemsFiltrados([]);
     }
-  }, [busquedaItem]);
+  }, [busquedaItem, itemsSeleccionados]);
 
   const cargarOrdenes = async () => {
     try {
