@@ -99,6 +99,13 @@ def recepcion_completa():
 
     client = Client.query.filter_by(telefono=data['telefono']).first()
     if not client:
+        nombre_norm = (data.get('nombre_cliente') or '').strip().lower()
+        if nombre_norm:
+            for c in Client.query.all():
+                if (c.nombre or '').strip().lower() == nombre_norm:
+                    client = c
+                    break
+    if not client:
         client = Client(
             cedula_rif=data.get('cedula_rif', ''),
             nombre=data['nombre_cliente'],
@@ -111,6 +118,7 @@ def recepcion_completa():
     else:
         client.cedula_rif = data.get('cedula_rif', client.cedula_rif) or client.cedula_rif
         client.nombre = data['nombre_cliente']
+        client.telefono = data['telefono'] or client.telefono
         client.empresa = data.get('empresa', client.empresa)
         client.correo = data.get('correo', client.correo)
         db.session.flush()

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { workOrders, photos, qr } from '../api';
+import { workOrders, photos, qr, clients as clientsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import catalogo from '../data/catalogo_afilado.json';
@@ -10,6 +10,19 @@ import PullIndicator from '../components/PullIndicator';
 
 const TIPOS_EQUIPO = ['Compresores', 'Pistolas para clavar', 'Engrapadoras', 'Máquinas pequeñas', 'Máquinas grandes'];
 const TIPOS_SERVICIO = ['Reparación', 'Afilado'];
+
+const sugerenciasStyle = {
+  position: 'absolute', top: '100%', left: 0, right: 0,
+  background: 'white', border: '1px solid var(--gray-200)',
+  borderRadius: 'var(--radius-sm)', maxHeight: '200px',
+  overflowY: 'auto', zIndex: 200, boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+};
+
+const sugerenciaItemStyle = {
+  padding: '10px 12px', cursor: 'pointer',
+  borderBottom: '1px solid var(--gray-100)',
+  fontSize: '0.85rem',
+};
 
 function obtenerTodosItems() {
   const items = [];
@@ -51,6 +64,9 @@ export default function Recepcion() {
   const [mostrarLista, setMostrarLista] = useState(false);
   const [itemsSeleccionados, setItemsSeleccionados] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [listaClientes, setListaClientes] = useState([]);
+  const [sugerenciasCliente, setSugerenciasCliente] = useState([]);
+  const [campoSugerencia, setCampoSugerencia] = useState('');
   const todosItems = obtenerTodosItems();
 
   const ESTADOS_COLORES = {
@@ -63,6 +79,8 @@ export default function Recepcion() {
   };
 
   useEffect(() => { cargarOrdenes(); }, [busqueda]);
+
+  useEffect(() => { cargarClientes(); }, []);
 
   useEffect(() => {
     const timer = setInterval(cargarOrdenes, 30000);
@@ -78,6 +96,53 @@ export default function Recepcion() {
       setItemsFiltrados([]);
     }
   }, [busquedaItem, itemsSeleccionados]);
+
+  const cargarClientes = async () => {
+    try {
+      const res = await clientsApi.getAll();
+      setListaClientes(res.data);
+    } catch {}
+  };
+
+  const filtrarClientes = (valor, campo) => {
+    const q = (valor || '').trim().toLowerCase();
+    if (q.length < 2) {
+      setSugerenciasCliente([]);
+      setCampoSugerencia('');
+      return;
+    }
+    const encontrados = listaClientes.filter(c =>
+      (campo === 'telefono'
+        ? (c.telefono || '').toLowerCase().includes(q) || (c.nombre || '').toLowerCase().includes(q)
+        : (c.nombre || '').toLowerCase().includes(q) ||
+          (c.empresa || '').toLowerCase().includes(q) ||
+          (c.cedula_rif || '').toLowerCase().includes(q) ||
+          (c.telefono || '').toLowerCase().includes(q)
+      )
+    ).slice(0, 8);
+    setSugerenciasCliente(encontrados);
+    setCampoSugerencia(campo);
+  };
+
+  const seleccionarCliente = (c) => {
+    setForm(prev => ({
+      ...prev,
+      nombre_cliente: c.nombre || '',
+      cedula_rif: c.cedula_rif || '',
+      telefono: c.telefono || '',
+      empresa: c.empresa || '',
+      correo: c.correo || '',
+    }));
+    setSugerenciasCliente([]);
+    setCampoSugerencia('');
+  };
+
+  const listaSugerencias = campoSugerencia === 'telefono'
+    ? sugerenciasCliente.filter(c =>
+        (c.telefono || '').toLowerCase().includes((form.telefono || '').trim().toLowerCase()) ||
+        (c.nombre || '').toLowerCase().includes((form.telefono || '').trim().toLowerCase())
+      )
+    : sugerenciasCliente;
 
   const cargarOrdenes = async () => {
     try {
@@ -128,7 +193,10 @@ export default function Recepcion() {
       });
       setItemsSeleccionados([]);
       setBusquedaItem('');
+      setSugerenciasCliente([]);
+      setCampoSugerencia('');
       cargarOrdenes();
+      cargarClientes();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al crear la orden');
     }
@@ -176,19 +244,84 @@ export default function Recepcion() {
             <form onSubmit={handleSubmit}>
               <div className="form-section-title">Datos del Cliente</div>
               <div className="form-row">
-                <div className="form-group">
+                <div className="form-group" style={{ position: 'relative' }}>
                   <label>Cédula / RIF</label>
-                  <input value={form.cedula_rif} onChange={(e) => updateChange('cedula_rif', e.target.value)} placeholder="Ej: V-12345678 o J-12345678-9" />
+                  <input
+                    value={form.cedula_rif}
+                    onChange={(e) => {
+                      updateChange('cedula_rif', e.target.value);
+                      filtrarClientes(e.target.value, 'nombre');
+                    }}
+                    onFocus={() => filtrarClientes(form.nombre_cliente || form.cedula_rif, 'nombre')}
+                    placeholder="Ej: V-12345678 o J-12345678-9"
+                    autoComplete="off"
+                  />
+                  {campoSugerencia && listaSugerencias.length > 0 && !form.nombre_cliente && (
+                    <div style={sugerenciasStyle}>
+                      {listaSugerencias.map((c) => (
+                        <div key={c.id} style={sugerenciaItemStyle} onClick={() => seleccionarCliente(c)}>
+                          <span style={{ fontWeight: 600 }}>{c.nombre}</span>
+                          <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--gray-400)' }}>
+                            {c.cedula_rif || 'Sin cédula'} · {c.telefono}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="form-group">
+                <div className="form-group" style={{ position: 'relative' }}>
                   <label className="label-required">Teléfono</label>
-                  <input value={form.telefono} onChange={(e) => updateChange('telefono', e.target.value)} required />
+                  <input
+                    value={form.telefono}
+                    onChange={(e) => {
+                      updateChange('telefono', e.target.value);
+                      filtrarClientes(e.target.value, 'telefono');
+                    }}
+                    onFocus={() => filtrarClientes(form.telefono, 'telefono')}
+                    onBlur={() => setTimeout(() => { setSugerenciasCliente([]); setCampoSugerencia(''); }, 150)}
+                    required
+                    autoComplete="off"
+                  />
+                  {campoSugerencia === 'telefono' && listaSugerencias.length > 0 && (
+                    <div style={sugerenciasStyle}>
+                      {listaSugerencias.map((c) => (
+                        <div key={c.id} style={sugerenciaItemStyle} onMouseDown={(e) => { e.preventDefault(); seleccionarCliente(c); }}>
+                          <span style={{ fontWeight: 600 }}>{c.nombre}</span>
+                          <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--gray-400)' }}>
+                            {c.telefono} {c.empresa ? `· ${c.empresa}` : ''}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="form-row">
-                <div className="form-group">
+                <div className="form-group" style={{ position: 'relative' }}>
                   <label className="label-required">Nombre del Cliente / Empresa</label>
-                  <input value={form.nombre_cliente} onChange={(e) => updateChange('nombre_cliente', e.target.value)} required />
+                  <input
+                    value={form.nombre_cliente}
+                    onChange={(e) => {
+                      updateChange('nombre_cliente', e.target.value);
+                      filtrarClientes(e.target.value, 'nombre');
+                    }}
+                    onFocus={() => filtrarClientes(form.nombre_cliente, 'nombre')}
+                    onBlur={() => setTimeout(() => { setSugerenciasCliente([]); setCampoSugerencia(''); }, 150)}
+                    required
+                    autoComplete="off"
+                  />
+                  {campoSugerencia === 'nombre' && listaSugerencias.length > 0 && (
+                    <div style={sugerenciasStyle}>
+                      {listaSugerencias.map((c) => (
+                        <div key={c.id} style={sugerenciaItemStyle} onMouseDown={(e) => { e.preventDefault(); seleccionarCliente(c); }}>
+                          <span style={{ fontWeight: 600 }}>{c.nombre}</span>
+                          <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--gray-400)' }}>
+                            {c.telefono} {c.empresa ? `· ${c.empresa}` : ''} {c.cedula_rif ? `· ${c.cedula_rif}` : ''}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="form-group">
                   <label>Correo</label>
@@ -211,7 +344,7 @@ export default function Recepcion() {
                       onClick={() => {
                         updateChange('tipo_servicio', s);
                         if (s === 'Reparación') {
-                          setItemSeleccionado('');
+                          setItemsSeleccionados([]);
                           setBusquedaItem('');
                         }
                       }}
