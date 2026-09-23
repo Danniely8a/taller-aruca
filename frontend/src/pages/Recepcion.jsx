@@ -67,6 +67,7 @@ export default function Recepcion() {
   const [listaClientes, setListaClientes] = useState([]);
   const [sugerenciasCliente, setSugerenciasCliente] = useState([]);
   const [campoSugerencia, setCampoSugerencia] = useState('');
+  const [enviando, setEnviando] = useState(false);
   const todosItems = obtenerTodosItems();
 
   const ESTADOS_COLORES = {
@@ -169,6 +170,8 @@ export default function Recepcion() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (enviando) return;
+    setEnviando(true);
     try {
       const res = await workOrders.recepcion({
         ...form,
@@ -199,6 +202,8 @@ export default function Recepcion() {
       cargarClientes();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al crear la orden');
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -517,8 +522,8 @@ export default function Recepcion() {
                 <textarea value={form.falla_reportada} onChange={(e) => updateChange('falla_reportada', e.target.value)} placeholder="Describa lo que el cliente necesita..." />
               </div>
 
-              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '8px' }}>
-                Recibir Equipo y Generar Orden
+              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '8px' }} disabled={enviando}>
+                {enviando ? 'Creando orden...' : 'Recibir Equipo y Generar Orden'}
               </button>
             </form>
           </div>

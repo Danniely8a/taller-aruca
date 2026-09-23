@@ -16,6 +16,7 @@ export default function Ordenes() {
   const [busqueda, setBusqueda] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [enviando, setEnviando] = useState(false);
   const [form, setForm] = useState({ cliente_id: '', equipo_id: '', prioridad: 'Normal', falla_reportada: '' });
 
   const ESTADOS = [
@@ -69,6 +70,8 @@ export default function Ordenes() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (enviando) return;
+    setEnviando(true);
     try {
       await workOrders.create({ ...form, usuario_recepcion: user.id });
       toast.success('Orden de trabajo creada');
@@ -77,6 +80,8 @@ export default function Ordenes() {
       load();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al crear orden');
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -229,7 +234,7 @@ export default function Ordenes() {
               </div>
               <div className="modal-actions">
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary">Crear Orden</button>
+                <button type="submit" className="btn btn-primary" disabled={enviando}>{enviando ? 'Creando...' : 'Crear Orden'}</button>
               </div>
             </form>
           </div>
