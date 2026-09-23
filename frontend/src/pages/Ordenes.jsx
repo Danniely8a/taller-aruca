@@ -53,7 +53,7 @@ export default function Ordenes() {
         );
       }
       setOrdenes(data);
-    } catch (err) { toast.error('Error al cargar órdenes'); }
+    } catch (err) { toast.error('Error al cargar órdenes', { id: 'load-ordenes' }); }
     finally { setLoading(false); }
   };
 

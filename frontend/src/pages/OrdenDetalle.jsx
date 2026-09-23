@@ -52,23 +52,63 @@ export default function OrdenDetalle() {
     'Afilando (En Proceso)': 'badge-warning', 'Pagado': 'badge-success',
   };
 
-  useEffect(() => { loadOrden(); loadHistorial(); loadPagos(); }, [id]);
+  useEffect(() => {
+    let cancelled = false;
+    const loadAll = async () => {
+      try {
+        const res = await workOrders.getOne(id);
+        if (cancelled) return;
+        setOrden(res.data);
+        setNotasTecnicas(res.data.notas_tecnicas || '');
+      } catch (err) {
+        if (cancelled) return;
+        if (err.response?.status === 404) {
+          toast.error('La orden ya no existe', { id: 'orden-404' });
+        } else {
+          toast.error('Error al cargar la orden', { id: 'orden-load' });
+        }
+        navigate('/ordenes', { replace: true });
+        return;
+      }
+      try {
+        const photoRes = await photos.get(id);
+        if (!cancelled) {
+          setFoto(photoRes.data);
+          setFotos(photoRes.data ? [photoRes.data] : []);
+        }
+      } catch {
+        if (!cancelled) { setFoto(null); setFotos([]); }
+      } finally {
+        if (!cancelled) setLoadingPhotos(false);
+      }
+      try {
+        const histRes = await statusHistory.getByOrder(id);
+        if (!cancelled) setHistorial(histRes.data);
+      } catch {}
+      try {
+        const pagosRes = await payments.getByOrder(id);
+        if (!cancelled) {
+          setPagos(pagosRes.data.pagos);
+          setTotalPagado(pagosRes.data.total_pagado);
+        }
+      } catch {}
+    };
+    setOrden(null);
+    setLoadingPhotos(true);
+    loadAll();
+    return () => { cancelled = true; };
+  }, [id]);
 
   const loadOrden = async () => {
     try {
       const res = await workOrders.getOne(id);
       setOrden(res.data);
       setNotasTecnicas(res.data.notas_tecnicas || '');
-      try {
-        const photoRes = await photos.get(id);
-        setFoto(photoRes.data);
-        setFotos(photoRes.data ? [photoRes.data] : []);
-      } catch { setFoto(null); setFotos([]); }
     } catch (err) {
-      toast.error('Error al cargar la orden');
-      navigate('/ordenes');
-    } finally {
-      setLoadingPhotos(false);
+      if (err.response?.status === 404) {
+        toast.error('La orden ya no existe', { id: 'orden-404' });
+        navigate('/ordenes', { replace: true });
+      }
     }
   };
 

@@ -94,7 +94,7 @@ export default function Recepcion() {
       }
       setOrdenes(data.slice(0, 20));
     } catch (err) {
-      toast.error('Error al cargar órdenes');
+      toast.error('Error al cargar órdenes', { id: 'load-ordenes' });
     } finally {
       setLoading(false);
     }
