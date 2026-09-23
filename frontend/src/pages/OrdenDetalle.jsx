@@ -206,7 +206,7 @@ export default function OrdenDetalle() {
           <button className="btn btn-outline" onClick={() => window.open(`/api/work-orders/${id}/comprobante`, '_blank')}>
             Comprobante Cliente
           </button>
-          {hasPermission('Gerente General') && (
+          {hasPermission('Gerente General', 'Recepción / Ventas') && (
             <button className="btn btn-danger" onClick={handleEliminarOrden}>
               Eliminar
             </button>

@@ -352,7 +352,7 @@ def update_work_order(id):
     return jsonify(order.to_dict())
 
 @work_orders_bp.route('/<int:id>', methods=['DELETE'])
-@role_required('Gerente General')
+@role_required('Gerente General', 'Recepción / Ventas')
 def delete_work_order(id):
     order = WorkOrder.query.get_or_404(id)
 

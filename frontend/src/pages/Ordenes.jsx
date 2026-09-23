@@ -184,7 +184,7 @@ export default function Ordenes() {
                 <td>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <Link to={`/ordenes/${o.id}`} className="btn btn-primary btn-sm">Ver</Link>
-                    {hasPermission('Gerente General') && (
+                    {hasPermission('Gerente General', 'Recepción / Ventas') && (
                       <button className="btn btn-danger btn-sm" onClick={() => handleEliminar(o)}>Eliminar</button>
                     )}
                   </div>
