@@ -1,6 +1,7 @@
 import os
 import socket
 import re
+import json
 from flask import Blueprint, send_file, jsonify, request
 from models.work_order import WorkOrder
 from .auth import role_required
@@ -38,6 +39,41 @@ def get_site_url():
     except Exception:
         return request.host_url.rstrip('/')
 
+def _load_items(order):
+    if not order.item_seleccionado or order.item_seleccionado == '[]':
+        return []
+    try:
+        items = json.loads(order.item_seleccionado)
+    except Exception:
+        return []
+    result = []
+    for it in items:
+        if isinstance(it, dict):
+            nombre = (it.get('item') or '').strip()
+            cantidad = it.get('cantidad', 1)
+        else:
+            nombre = str(it).strip()
+            cantidad = 1
+        if nombre:
+            result.append((nombre, cantidad))
+    return result
+
+def _wrap_text(text, font, max_width, draw):
+    words = text.split()
+    lines = []
+    current = ''
+    for w in words:
+        test = f'{current} {w}'.strip()
+        if draw.textlength(test, font=font) <= max_width:
+            current = test
+        else:
+            if current:
+                lines.append(current)
+            current = w
+    if current:
+        lines.append(current)
+    return lines or [text]
+
 @qr_bp.route('/<int:order_id>', methods=['GET'])
 @role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def generate_qr(order_id):
@@ -45,6 +81,7 @@ def generate_qr(order_id):
 
     client = order.client
     equip = order.equipment
+    items = _load_items(order)
 
     site_url = get_site_url()
     qr_text = f"{site_url}/ver/ot/{order.id}"
@@ -55,33 +92,70 @@ def generate_qr(order_id):
     qr_img = qr.make_image(fill_color="black", back_color="white")
 
     label_width = 300
-    label_height = 350
-    label = Image.new('RGB', (label_width, label_height), 'white')
-
-    qr_resized = qr_img.resize((200, 200))
-    label.paste(qr_resized, (50, 10))
-
-    draw = ImageDraw.Draw(label)
+    base_height = 350
+    item_lines = []
 
     try:
         font_large = ImageFont.truetype("arial.ttf", 20)
         font_small = ImageFont.truetype("arial.ttf", 13)
-    except:
+        font_item = ImageFont.truetype("arial.ttf", 12)
+        font_bold = ImageFont.truetype("arial.ttf", 14)
+    except Exception:
         font_large = ImageFont.load_default()
         font_small = ImageFont.load_default()
+        font_item = ImageFont.load_default()
+        font_bold = ImageFont.load_default()
+
+    tmp_label = Image.new('RGB', (label_width, base_height), 'white')
+    tmp_draw = ImageDraw.Draw(tmp_label)
+    margin = 20
+    text_width = label_width - margin * 2
+
+    for nombre, cantidad in items:
+        prefix = f"{cantidad}x " if cantidad and cantidad != 1 else "• "
+        for line in _wrap_text(f"{prefix}{nombre}", font_item, text_width, tmp_draw):
+            item_lines.append(line)
+
+    extra = 0
+    if item_lines:
+        extra = 30 + len(item_lines) * 16 + 8
+
+    label_height = base_height + extra
+    label = Image.new('RGB', (label_width, label_height), 'white')
+    qr_resized = qr_img.resize((200, 200))
+    label.paste(qr_resized, (50, 10))
+    draw = ImageDraw.Draw(label)
 
     y = 220
-    draw.text((label_width//2, y), f"OT: {order.numero_ot}", fill='black', anchor='mm', font=font_large)
+    draw.text((label_width // 2, y), f"OT: {order.numero_ot}", fill='black', anchor='mm', font=font_large)
     y += 25
-    draw.text((label_width//2, y), f"Código: {order.codigo_corto}", fill='black', anchor='mm', font=font_small)
+    draw.text((label_width // 2, y), f"Código: {order.codigo_corto}", fill='black', anchor='mm', font=font_small)
     y += 22
 
-    if client:
-        draw.text((label_width//2, y), f"Cliente: {client.nombre}", fill='black', anchor='mm', font=font_small)
+    if order.fecha_ingreso:
+        fecha = order.fecha_ingreso.strftime('%d/%m/%Y %H:%M')
+        draw.text((label_width // 2, y), f"Ingreso: {fecha}", fill='black', anchor='mm', font=font_small)
         y += 20
 
+    if client:
+        for line in _wrap_text(f"Cliente: {client.nombre}", font_small, text_width, draw):
+            draw.text((label_width // 2, y), line, fill='black', anchor='mm', font=font_small)
+            y += 18
+        y += 2
+
     if equip:
-        draw.text((label_width//2, y), f"{equip.tipo_equipo} - {equip.marca} {equip.modelo}", fill='black', anchor='mm', font=font_small)
+        eq_text = f"{equip.tipo_equipo} - {equip.marca} {equip.modelo}".strip(' -')
+        for line in _wrap_text(eq_text, font_small, text_width, draw):
+            draw.text((label_width // 2, y), line, fill='black', anchor='mm', font=font_small)
+            y += 18
+        y += 4
+
+    if item_lines:
+        draw.text((label_width // 2, y), "Ítems de Afilado", fill='black', anchor='mm', font=font_bold)
+        y += 22
+        for line in item_lines:
+            draw.text((label_width // 2, y), line, fill='black', anchor='mm', font=font_item)
+            y += 16
 
     buffer = io.BytesIO()
     label.save(buffer, format='PNG')
