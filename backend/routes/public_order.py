@@ -58,6 +58,10 @@ HTML_TEMPLATE = """
         .priority-badge.Media { background: #fff3e0; color: #ef6c00; }
         .priority-badge.Baja { background: #e8f5e9; color: #2e7d32; }
         .refresh-indicator { text-align: center; padding: 6px; color: #999; font-size: 0.75em; }
+        .items-list { list-style: none; padding: 0; margin: 4px 0 0; }
+        .items-list li { display: flex; align-items: center; gap: 8px; padding: 7px 10px; margin-bottom: 6px; background: #e8f5e9; border-radius: 8px; font-size: 0.9em; font-weight: 600; color: #1b5e20; }
+        .items-list .qty { background: #2e7d32; color: white; min-width: 34px; text-align: center; padding: 2px 6px; border-radius: 6px; font-weight: 800; font-size: 0.85em; }
+        .items-list .item-name { flex: 1; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -73,7 +77,17 @@ HTML_TEMPLATE = """
             <span class="priority-badge {{ order.prioridad }}">{{ order.prioridad }}</span>
             <div class="info-row" style="margin-top:10px"><span class="info-label">Tipo de Servicio</span><span class="info-value" id="tipo-servicio">{{ order.tipo_servicio or 'Reparación' }}</span></div>
             {% if items|length > 0 %}
-            <div class="info-row"><span class="info-label">Ítems de Afilado</span><span class="info-value">{{ items|join(', ') }}</span></div>
+            <div style="margin-top:12px">
+                <div class="info-label" style="margin-bottom:8px;font-weight:700;color:#333">Ítems de Afilado</div>
+                <ul class="items-list">
+                    {% for it in items %}
+                    <li>
+                        <span class="qty">{{ it.qty }}x</span>
+                        <span class="item-name">{{ it.nombre }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
             {% endif %}
         </div>
 
@@ -113,7 +127,7 @@ HTML_TEMPLATE = """
 
         <div class="card">
             <h3>Fechas</h3>
-            <div class="info-row"><span class="info-label">Ingreso</span><span class="info-value">{{ order.fecha_ingreso.strftime('%d/%m/%Y %H:%M') if order.fecha_ingreso else '-' }}</span></div>
+            <div class="info-row"><span class="info-label">Ingreso</span><span class="info-value">{{ order.fecha_ingreso.strftime('%d/%m/%Y %I:%M %p').replace('AM', 'a.m.').replace('PM', 'p.m.') if order.fecha_ingreso else '-' }}</span></div>
             <div class="info-row" style="background:#e8f5e9;padding:8px;border-radius:6px;margin-top:8px"><span class="info-label" style="color:#2e7d32;font-weight:bold">Tiempo Estimado de Entrega</span><span class="info-value" style="color:#2e7d32;font-weight:bold">4 días hábiles</span></div>
         </div>
 
@@ -124,7 +138,7 @@ HTML_TEMPLATE = """
                 {% for h in historial %}
                 <li>
                     <strong>{{ h.nuevo_estado }}</strong><br>
-                    <span class="date">{{ h.fecha_cambio.strftime('%d/%m/%Y %H:%M') }}</span>
+                    <span class="date">{{ h.fecha_cambio.strftime('%d/%m/%Y %I:%M %p').replace('AM', 'a.m.').replace('PM', 'p.m.') }}</span>
                     {% if h.user %}<br><span style="color:#666;font-size:0.8em">{{ h.user.nombre }}</span>{% endif %}
                 </li>
                 {% endfor %}
@@ -172,11 +186,23 @@ def view_order(order_id):
     items = []
     if order.item_seleccionado:
         try:
-            items = json.loads(order.item_seleccionado)
-        except:
-            items = [order.item_seleccionado]
+            raw = json.loads(order.item_seleccionado)
+        except Exception:
+            raw = [order.item_seleccionado]
+        if isinstance(raw, list):
+            for it in raw:
+                if isinstance(it, dict):
+                    nombre = (it.get('item') or '').strip()
+                    try:
+                        qty = int(it.get('cantidad') or 1)
+                    except Exception:
+                        qty = 1
+                else:
+                    nombre = str(it).strip()
+                    qty = 1
+                if nombre:
+                    items.append({'nombre': nombre, 'qty': max(1, qty)})
 
-    from flask import render_template
     return render_template_string(HTML_TEMPLATE, order=order, client=client, equip=equip, historial=historial, items=items)
 
 
