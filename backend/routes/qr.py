@@ -105,10 +105,10 @@ def generate_qr(order_id):
     qr_img = qr.make_image(fill_color="black", back_color="white")
 
     label_width = 300
-    logo_h = 48
+    logo_h = 64
     logo_top = 8
     qr_top = logo_top + logo_h + 8
-    qr_size = 180
+    qr_size = 170
     qr_left = (label_width - qr_size) // 2
     base_height = qr_top + qr_size + 185
     item_lines = []
