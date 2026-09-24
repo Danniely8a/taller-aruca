@@ -110,16 +110,16 @@ def generate_qr(order_id):
     qr_top = logo_top + logo_h + 8
     qr_size = 170
     qr_left = (label_width - qr_size) // 2
-    base_height = qr_top + qr_size + 185
+    base_height = qr_top + qr_size + 215
     item_lines = []
 
     try:
-        font_large = ImageFont.truetype("arial.ttf", 20)
-        font_small = ImageFont.truetype("arial.ttf", 13)
-        font_item = ImageFont.truetype("arial.ttf", 12)
-        font_bold = ImageFont.truetype("arial.ttf", 14)
-        font_client_label = ImageFont.truetype("arial.ttf", 12)
-        font_client = ImageFont.truetype("arialbd.ttf", 17)
+        font_large = ImageFont.truetype("arialbd.ttf", 24)
+        font_small = ImageFont.truetype("arial.ttf", 16)
+        font_item = ImageFont.truetype("arial.ttf", 14)
+        font_bold = ImageFont.truetype("arialbd.ttf", 17)
+        font_client_label = ImageFont.truetype("arial.ttf", 14)
+        font_client = ImageFont.truetype("arialbd.ttf", 20)
     except Exception:
         font_large = ImageFont.load_default()
         font_small = ImageFont.load_default()
@@ -140,7 +140,7 @@ def generate_qr(order_id):
 
     extra = 0
     if item_lines:
-        extra = 30 + len(item_lines) * 16 + 8
+        extra = 36 + len(item_lines) * 18 + 8
 
     label_height = base_height + extra
     label = Image.new('RGB', (label_width, label_height), 'white')
@@ -156,38 +156,38 @@ def generate_qr(order_id):
     label.paste(qr_resized, (qr_left, qr_top))
     draw = ImageDraw.Draw(label)
 
-    y = qr_top + qr_size + 16
+    y = qr_top + qr_size + 18
     draw.text((label_width // 2, y), f"OT: {order.numero_ot}", fill='black', anchor='mm', font=font_large)
-    y += 25
+    y += 30
     draw.text((label_width // 2, y), f"Código: {order.codigo_corto}", fill='black', anchor='mm', font=font_small)
-    y += 22
+    y += 26
 
     if order.fecha_ingreso:
         fecha = order.fecha_ingreso.strftime('%d/%m/%Y %H:%M')
         draw.text((label_width // 2, y), f"Ingreso: {fecha}", fill='black', anchor='mm', font=font_small)
-        y += 20
+        y += 26
 
     if client:
         draw.text((label_width // 2, y), "Cliente:", fill='#4B5563', anchor='mm', font=font_client_label)
-        y += 16
+        y += 20
         for line in _wrap_text(client.nombre or '', font_client, text_width, draw):
             draw.text((label_width // 2, y), line, fill='black', anchor='mm', font=font_client)
-            y += 20
-        y += 4
+            y += 26
+        y += 6
 
     if equip:
         eq_text = f"{equip.tipo_equipo} - {equip.marca} {equip.modelo}".strip(' -')
         for line in _wrap_text(eq_text, font_small, text_width, draw):
             draw.text((label_width // 2, y), line, fill='black', anchor='mm', font=font_small)
-            y += 18
-        y += 4
+            y += 24
+        y += 6
 
     if item_lines:
         draw.text((label_width // 2, y), "Ítems de Afilado", fill='black', anchor='mm', font=font_bold)
-        y += 22
+        y += 28
         for line in item_lines:
             draw.text((label_width // 2, y), line, fill='black', anchor='mm', font=font_item)
-            y += 16
+            y += 18
 
     buffer = io.BytesIO()
     label.save(buffer, format='PNG')
