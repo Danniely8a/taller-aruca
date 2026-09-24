@@ -74,6 +74,19 @@ def _wrap_text(text, font, max_width, draw):
         lines.append(current)
     return lines or [text]
 
+def _load_logo():
+    paths = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'isotipo_aruca.png'),
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logo_aruca.png'),
+    ]
+    for path in paths:
+        if os.path.exists(path):
+            try:
+                return Image.open(path).convert('RGBA')
+            except Exception:
+                continue
+    return None
+
 @qr_bp.route('/<int:order_id>', methods=['GET'])
 @role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def generate_qr(order_id):
@@ -92,7 +105,12 @@ def generate_qr(order_id):
     qr_img = qr.make_image(fill_color="black", back_color="white")
 
     label_width = 300
-    base_height = 350
+    logo_h = 48
+    logo_top = 8
+    qr_top = logo_top + logo_h + 8
+    qr_size = 180
+    qr_left = (label_width - qr_size) // 2
+    base_height = qr_top + qr_size + 160
     item_lines = []
 
     try:
@@ -122,11 +140,19 @@ def generate_qr(order_id):
 
     label_height = base_height + extra
     label = Image.new('RGB', (label_width, label_height), 'white')
-    qr_resized = qr_img.resize((200, 200))
-    label.paste(qr_resized, (50, 10))
+
+    logo = _load_logo()
+    if logo:
+        ratio = logo_h / logo.height
+        logo_w = max(1, int(logo.width * ratio))
+        logo = logo.resize((logo_w, logo_h), Image.LANCZOS)
+        label.paste(logo, ((label_width - logo_w) // 2, logo_top), logo)
+
+    qr_resized = qr_img.resize((qr_size, qr_size))
+    label.paste(qr_resized, (qr_left, qr_top))
     draw = ImageDraw.Draw(label)
 
-    y = 220
+    y = qr_top + qr_size + 16
     draw.text((label_width // 2, y), f"OT: {order.numero_ot}", fill='black', anchor='mm', font=font_large)
     y += 25
     draw.text((label_width // 2, y), f"Código: {order.codigo_corto}", fill='black', anchor='mm', font=font_small)

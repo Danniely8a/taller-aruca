@@ -202,7 +202,7 @@ def recepcion_completa():
     return jsonify(order.to_dict()), 201
 
 @work_orders_bp.route('/ordenes-items', methods=['GET'])
-@role_required('Gerente General', 'Supervisor', 'Pagos')
+@role_required('Gerente General', 'Supervisor', 'Pagos', 'Recepción / Ventas')
 def ordenes_items():
     orders = WorkOrder.query.order_by(WorkOrder.fecha_ingreso.desc()).all()
     return jsonify([{

@@ -24,9 +24,11 @@ const EXTRAS_MENU = {
     { path: '/usuarios', label: 'Usuarios', icon: '👥' },
     { path: '/clientes', label: 'Clientes', icon: '👤' },
     { path: '/equipos', label: 'Equipos', icon: '🔧' },
+    { path: '/genesis', label: 'Producción', icon: '🏭' },
     { path: '/pagos', label: 'Pagos', icon: '💰' },
   ],
   'Supervisor': [
+    { path: '/genesis', label: 'Producción', icon: '🏭' },
     { path: '/pagos', label: 'Pagos', icon: '💰' },
   ],
   'Técnico': [
@@ -35,6 +37,7 @@ const EXTRAS_MENU = {
   'Recepción / Ventas': [
     { path: '/clientes', label: 'Clientes', icon: '👤' },
     { path: '/equipos', label: 'Equipos', icon: '🔧' },
+    { path: '/genesis', label: 'Producción', icon: '🏭' },
   ],
   'Pagos': [
     { path: '/genesis', label: 'Órdenes e Ítems', icon: '📋' },
