@@ -110,7 +110,7 @@ def generate_qr(order_id):
     qr_top = logo_top + logo_h + 8
     qr_size = 180
     qr_left = (label_width - qr_size) // 2
-    base_height = qr_top + qr_size + 160
+    base_height = qr_top + qr_size + 185
     item_lines = []
 
     try:
@@ -118,11 +118,15 @@ def generate_qr(order_id):
         font_small = ImageFont.truetype("arial.ttf", 13)
         font_item = ImageFont.truetype("arial.ttf", 12)
         font_bold = ImageFont.truetype("arial.ttf", 14)
+        font_client_label = ImageFont.truetype("arial.ttf", 12)
+        font_client = ImageFont.truetype("arialbd.ttf", 17)
     except Exception:
         font_large = ImageFont.load_default()
         font_small = ImageFont.load_default()
         font_item = ImageFont.load_default()
         font_bold = ImageFont.load_default()
+        font_client_label = ImageFont.load_default()
+        font_client = ImageFont.load_default()
 
     tmp_label = Image.new('RGB', (label_width, base_height), 'white')
     tmp_draw = ImageDraw.Draw(tmp_label)
@@ -164,10 +168,12 @@ def generate_qr(order_id):
         y += 20
 
     if client:
-        for line in _wrap_text(f"Cliente: {client.nombre}", font_small, text_width, draw):
-            draw.text((label_width // 2, y), line, fill='black', anchor='mm', font=font_small)
-            y += 18
-        y += 2
+        draw.text((label_width // 2, y), "Cliente:", fill='#4B5563', anchor='mm', font=font_client_label)
+        y += 16
+        for line in _wrap_text(client.nombre or '', font_client, text_width, draw):
+            draw.text((label_width // 2, y), line, fill='black', anchor='mm', font=font_client)
+            y += 20
+        y += 4
 
     if equip:
         eq_text = f"{equip.tipo_equipo} - {equip.marca} {equip.modelo}".strip(' -')
