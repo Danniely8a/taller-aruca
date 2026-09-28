@@ -43,7 +43,7 @@ def _fallback_read(filename):
         return f.read()
 
 @photos_bp.route('/<int:order_id>', methods=['POST'])
-@role_required('Gerente General', 'Recepción / Ventas')
+@role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def upload_photo(order_id):
     order = WorkOrder.query.get_or_404(order_id)
     if 'foto' not in request.files:

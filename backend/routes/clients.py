@@ -17,7 +17,7 @@ def get_client(id):
     return jsonify(client.to_dict())
 
 @clients_bp.route('/', methods=['POST'])
-@role_required('Gerente General', 'Recepción / Ventas')
+@role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def create_client():
     data = request.get_json()
     client = Client(
@@ -32,7 +32,7 @@ def create_client():
     return jsonify(client.to_dict()), 201
 
 @clients_bp.route('/<int:id>', methods=['PUT'])
-@role_required('Gerente General', 'Recepción / Ventas')
+@role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def update_client(id):
     client = Client.query.get_or_404(id)
     data = request.get_json()

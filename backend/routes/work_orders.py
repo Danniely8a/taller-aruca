@@ -66,7 +66,7 @@ def get_work_order(id):
     return jsonify(order.to_dict())
 
 @work_orders_bp.route('/', methods=['POST'])
-@role_required('Gerente General', 'Recepción / Ventas')
+@role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def create_work_order():
     data = request.get_json()
     order = WorkOrder(
@@ -93,7 +93,7 @@ def create_work_order():
     return jsonify(order.to_dict()), 201
 
 @work_orders_bp.route('/recepcion', methods=['POST'])
-@role_required('Gerente General', 'Recepción / Ventas')
+@role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def recepcion_completa():
     data = request.get_json()
 
@@ -350,7 +350,7 @@ def update_items_validados(id):
     return jsonify(order.to_dict())
 
 @work_orders_bp.route('/<int:id>', methods=['PUT'])
-@role_required('Gerente General', 'Recepción / Ventas')
+@role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def update_work_order(id):
     order = WorkOrder.query.get_or_404(id)
     data = request.get_json()
@@ -360,7 +360,7 @@ def update_work_order(id):
     return jsonify(order.to_dict())
 
 @work_orders_bp.route('/<int:id>', methods=['DELETE'])
-@role_required('Gerente General', 'Recepción / Ventas')
+@role_required('Gerente General', 'Supervisor', 'Recepción / Ventas')
 def delete_work_order(id):
     order = WorkOrder.query.get_or_404(id)
 

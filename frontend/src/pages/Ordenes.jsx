@@ -109,7 +109,7 @@ export default function Ordenes() {
       <PullIndicator refreshing={refreshing} pullDistance={pullDistance} />
       <div className="top-bar with-actions">
         <h1>Órdenes de Trabajo</h1>
-        {hasPermission('Recepción / Ventas', 'Gerente General') && (
+        {hasPermission('Recepción / Ventas', 'Supervisor', 'Gerente General') && (
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
             + Nueva Orden
           </button>
@@ -189,7 +189,7 @@ export default function Ordenes() {
                 <td>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <Link to={`/ordenes/${o.id}`} className="btn btn-primary btn-sm">Ver</Link>
-                    {hasPermission('Gerente General', 'Recepción / Ventas') && (
+                    {hasPermission('Gerente General', 'Supervisor', 'Recepción / Ventas') && (
                       <button className="btn btn-danger btn-sm" onClick={() => handleEliminar(o)}>Eliminar</button>
                     )}
                   </div>

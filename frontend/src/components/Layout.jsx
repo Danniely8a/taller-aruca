@@ -28,6 +28,8 @@ const EXTRAS_MENU = {
     { path: '/pagos', label: 'Pagos', icon: '💰' },
   ],
   'Supervisor': [
+    { path: '/clientes', label: 'Clientes', icon: '👤' },
+    { path: '/equipos', label: 'Equipos', icon: '🔧' },
     { path: '/genesis', label: 'Producción', icon: '🏭' },
     { path: '/pagos', label: 'Pagos', icon: '💰' },
   ],

@@ -237,7 +237,7 @@ export default function OrdenDetalle() {
               Cambiar Estado
             </button>
           )}
-          {hasPermission('Recepción / Ventas', 'Gerente General') && (
+          {hasPermission('Recepción / Ventas', 'Supervisor', 'Gerente General') && (
             <button className="btn btn-success" onClick={downloadQR}>
               Descargar Etiqueta QR
             </button>
@@ -246,7 +246,7 @@ export default function OrdenDetalle() {
           <button className="btn btn-outline" onClick={() => window.open(`/api/work-orders/${id}/comprobante`, '_blank')}>
             Comprobante Cliente
           </button>
-          {hasPermission('Gerente General', 'Recepción / Ventas') && (
+          {hasPermission('Gerente General', 'Supervisor', 'Recepción / Ventas') && (
             <button className="btn btn-danger" onClick={handleEliminarOrden}>
               Eliminar
             </button>
@@ -377,7 +377,7 @@ export default function OrdenDetalle() {
             ) : (
               <PhotoGallery photos={fotos} />
             )}
-            {hasPermission('Recepción / Ventas', 'Gerente General') && (
+            {hasPermission('Recepción / Ventas', 'Supervisor', 'Gerente General') && (
               <div style={{ marginTop: '12px' }}>
                 <label className="btn btn-primary" style={{ cursor: 'pointer' }}>
                   {orden?.tipo_servicio === 'Afilado' ? 'Subir Foto del Afilado' : 'Subir Foto del Equipo'}
