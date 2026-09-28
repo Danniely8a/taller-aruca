@@ -20,7 +20,7 @@ from routes.pagos_semanales import pagos_semanales_bp
 is_vercel = os.getenv('VERCEL') == '1'
 frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'))
 
-app = Flask(__name__, static_folder=frontend_dist, static_url_path='')
+app = Flask(__name__, static_folder=frontend_dist, static_url_path='/static')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-aruca-2026')
 
 database_url = os.getenv('DATABASE_URL')
