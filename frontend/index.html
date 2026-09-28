@@ -45,16 +45,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          let refreshing = false;
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (refreshing) return;
-            refreshing = true;
-            window.location.reload();
-          });
-          navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then((reg) => {
-            reg.update();
-            setInterval(() => reg.update(), 60000);
-          }).catch(() => {});
+          navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
         });
       }
       window.addEventListener('load', () => {

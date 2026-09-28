@@ -1,23 +1,14 @@
-const CACHE_NAME = 'taller-aruca-v4';
-const STATIC_ASSETS = [
-  '/manifest.json',
-  '/pwa-192x192.png',
-  '/pwa-512x512.png',
-  '/logo_aruca.png',
-];
+const CACHE_NAME = 'taller-aruca-v5';
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  );
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
@@ -26,47 +17,45 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
-
   if (url.origin !== self.location.origin) return;
 
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(request));
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/ver/') || url.pathname.startsWith('/ot/')) {
     return;
   }
 
-  if (request.mode === 'navigate' || request.destination === 'document' || url.pathname === '/sw.js') {
+  if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith(
-      fetch(request).then((response) => {
-        if (response.ok && url.pathname !== '/sw.js') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', clone));
-        }
-        return response;
-      }).catch(() => caches.match('/index.html'))
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', clone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match('/index.html');
+          if (cached) return cached;
+          return new Response('Sin conexión', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+          });
+        })
     );
     return;
   }
 
   if (url.pathname.startsWith('/assets/')) {
     event.respondWith(
-      fetch(request).then((response) => {
-        if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return response;
-      }).catch(() => caches.match(request))
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(async () => (await caches.match(request)) || Response.error())
     );
-    return;
   }
-
-  event.respondWith(
-    fetch(request).then((response) => {
-      if (response.ok) {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-      }
-      return response;
-    }).catch(() => caches.match(request))
-  );
 });
