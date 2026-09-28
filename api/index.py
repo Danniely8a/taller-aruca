@@ -2,11 +2,14 @@ import traceback
 import sys
 import os
 
+backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend'))
+if backend_path not in sys.path:
+    sys.path.insert(0, backend_path)
+
 try:
-    from _app import app
+    from vercel_app import app
 except Exception:
     tb = traceback.format_exc()
-    backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend'))
     diag = [
         f"python={sys.version}",
         f"file={__file__}",
