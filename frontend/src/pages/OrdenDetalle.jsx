@@ -173,11 +173,23 @@ export default function OrdenDetalle() {
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
+    e.target.value = '';
     if (!file) return;
     try {
       await photos.upload(id, file);
       toast.success('Foto subida correctamente');
       loadOrden();
+      setLoadingPhotos(true);
+      try {
+        const photoRes = await photos.get(id);
+        setFoto(photoRes.data);
+        setFotos(photoRes.data ? [photoRes.data] : []);
+      } catch {
+        setFoto(null);
+        setFotos([]);
+      } finally {
+        setLoadingPhotos(false);
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || err.message || 'Error al subir foto');
     }

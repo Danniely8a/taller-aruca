@@ -209,6 +209,7 @@ export default function Recepcion() {
 
   const handlePhotoUpload = async (e, orderId) => {
     const file = e.target.files[0];
+    e.target.value = '';
     if (!file) return;
     try {
       await photos.upload(orderId, file);

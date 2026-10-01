@@ -25,7 +25,7 @@ def upload_to_storage(bucket, path, file_bytes, content_type='image/jpeg'):
     }
     req = urllib.request.Request(full_url, data=file_bytes, headers=headers, method='POST')
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:
             pass
     except urllib.error.HTTPError as e:
         body = e.read().decode()
@@ -40,7 +40,7 @@ def delete_from_storage(bucket, path):
         full_url = f'{url}/storage/v1/object/{bucket}/{path}'
         headers = {'Authorization': f'Bearer {key}', 'apikey': key}
         req = urllib.request.Request(full_url, headers=headers, method='DELETE')
-        with urllib.request.urlopen(req):
+        with urllib.request.urlopen(req, timeout=15):
             pass
     except:
         pass
@@ -58,5 +58,5 @@ def download_file(bucket, path):
     full_url = f'{url}/storage/v1/object/{bucket}/{path}'
     headers = {'Authorization': f'Bearer {key}', 'apikey': key}
     req = urllib.request.Request(full_url, headers=headers)
-    with urllib.request.urlopen(req) as resp:
+    with urllib.request.urlopen(req, timeout=15) as resp:
         return resp.read()

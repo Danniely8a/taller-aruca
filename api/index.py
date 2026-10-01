@@ -114,6 +114,14 @@ try:
         except Exception as e:
             print(f"Skip work_orders migration: {e}")
             db.session.rollback()
+
+        try:
+            db.session.execute(text("ALTER TABLE photos ALTER COLUMN ruta_foto TYPE TEXT"))
+            db.session.commit()
+            print("OK: photos.ruta_foto -> TEXT")
+        except Exception as e:
+            print(f"Skip photos migration: {e}")
+            db.session.rollback()
         
         if User.query.count() == 0:
             usuarios = [
