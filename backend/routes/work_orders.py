@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, render_template_string
 from flask_login import current_user
 from models.work_order import WorkOrder, db
 from sqlalchemy import or_, and_
+from sqlalchemy.orm import selectinload
 from models.status_history import StatusHistory
 from models.client import Client
 from models.equipment import Equipment
@@ -44,7 +45,12 @@ def generar_codigo_corto():
 def get_work_orders():
     estado = request.args.get('estado')
     tipo = request.args.get('tipo')
-    query = WorkOrder.query
+    query = WorkOrder.query.options(
+        selectinload(WorkOrder.client),
+        selectinload(WorkOrder.equipment),
+        selectinload(WorkOrder.receiver),
+        selectinload(WorkOrder.tecnico_asignado),
+    )
     if current_user.rol == 'Técnico':
         if current_user.correo == 'carlos@gmail.com':
             query = query.filter_by(tecnico_asignado_id=current_user.id)
@@ -207,7 +213,9 @@ def recepcion_completa():
 @work_orders_bp.route('/ordenes-items', methods=['GET'])
 @role_required('Gerente General', 'Supervisor', 'Pagos', 'Recepción / Ventas')
 def ordenes_items():
-    orders = WorkOrder.query.order_by(WorkOrder.fecha_ingreso.desc()).all()
+    orders = WorkOrder.query.options(
+        selectinload(WorkOrder.client),
+    ).order_by(WorkOrder.fecha_ingreso.desc()).all()
     return jsonify([{
         'id': o.id,
         'numero_ot': o.numero_ot,
@@ -224,10 +232,16 @@ def ordenes_items():
 @work_orders_bp.route('/mis-ordenes', methods=['GET'])
 @role_required('Gerente General', 'Supervisor', 'Técnico', 'Recepción / Ventas')
 def mis_ordenes():
+    query = WorkOrder.query.options(
+        selectinload(WorkOrder.client),
+        selectinload(WorkOrder.equipment),
+        selectinload(WorkOrder.receiver),
+        selectinload(WorkOrder.tecnico_asignado),
+    )
     if current_user.correo == 'carlos@gmail.com':
-        orders = WorkOrder.query.filter_by(tecnico_asignado_id=current_user.id).order_by(WorkOrder.fecha_ingreso.desc()).all()
+        orders = query.filter_by(tecnico_asignado_id=current_user.id).order_by(WorkOrder.fecha_ingreso.desc()).all()
     else:
-        orders = WorkOrder.query.filter(
+        orders = query.filter(
             or_(
                 WorkOrder.tecnico_asignado_id == current_user.id,
                 and_(WorkOrder.tipo_servicio == 'Reparación', WorkOrder.tecnico_asignado_id == None)

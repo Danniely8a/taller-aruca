@@ -34,10 +34,12 @@ export default function Ordenes() {
     'Devolución por Garantía': 'badge-danger',
   };
 
-  useEffect(() => { load(); loadClientes(); loadEquipos(); }, [filtroEstado, filtroTipo]);
+  useEffect(() => { loadClientes(); loadEquipos(); }, []);
+
+  useEffect(() => { load(); }, [filtroEstado, filtroTipo]);
 
   useEffect(() => {
-    const timer = setInterval(() => { load(); loadClientes(); loadEquipos(); }, 30000);
+    const timer = setInterval(() => { load(); }, 30000);
     return () => clearInterval(timer);
   }, []);
 
