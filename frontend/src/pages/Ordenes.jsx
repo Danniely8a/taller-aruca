@@ -13,6 +13,7 @@ export default function Ordenes() {
   const [clientes, setClientes] = useState([]);
   const [equipos, setEquipos] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ export default function Ordenes() {
     'Devolución por Garantía': 'badge-danger',
   };
 
-  useEffect(() => { load(); loadClientes(); loadEquipos(); }, [filtroEstado]);
+  useEffect(() => { load(); loadClientes(); loadEquipos(); }, [filtroEstado, filtroTipo]);
 
   useEffect(() => {
     const timer = setInterval(() => { load(); loadClientes(); loadEquipos(); }, 30000);
@@ -42,7 +43,9 @@ export default function Ordenes() {
 
   const load = async () => {
     try {
-      const params = filtroEstado ? { estado: filtroEstado } : {};
+      const params = {};
+      if (filtroEstado) params.estado = filtroEstado;
+      if (filtroTipo) params.tipo = filtroTipo;
       const res = await workOrders.getAll(params);
       let data = res.data;
       if (busqueda) {
@@ -118,6 +121,25 @@ export default function Ordenes() {
 
       <div className="card" style={{ marginBottom: '20px' }}>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+          {[['', 'Todas'], ['Afilado', 'Afilado'], ['Reparación', 'Reparaciones']].map(([val, label]) => (
+            <button
+              key={val}
+              onClick={() => setFiltroTipo(val)}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '10px',
+                border: filtroTipo === val ? '2px solid #4F46E5' : '2px solid #E5E7EB',
+                background: filtroTipo === val ? '#EEF2FF' : 'white',
+                color: filtroTipo === val ? '#4F46E5' : '#6B7280',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {val === 'Afilado' ? '✂️ ' : val === 'Reparación' ? '🔧 ' : ''}{label}
+            </button>
+          ))}
           <button
             onClick={() => setFiltroEstado(filtroEstado === 'Listo para Entrega' ? '' : 'Listo para Entrega')}
             style={{

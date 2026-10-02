@@ -43,6 +43,7 @@ def generar_codigo_corto():
 @role_required('Gerente General', 'Supervisor', 'Recepción / Ventas', 'Técnico')
 def get_work_orders():
     estado = request.args.get('estado')
+    tipo = request.args.get('tipo')
     query = WorkOrder.query
     if current_user.rol == 'Técnico':
         if current_user.correo == 'carlos@gmail.com':
@@ -56,6 +57,8 @@ def get_work_orders():
             )
     if estado:
         query = query.filter_by(estado=estado)
+    if tipo in ('Afilado', 'Reparación'):
+        query = query.filter_by(tipo_servicio=tipo)
     orders = query.order_by(WorkOrder.fecha_ingreso.desc()).all()
     return jsonify([o.to_dict() for o in orders])
 
