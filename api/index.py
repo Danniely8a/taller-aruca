@@ -6,7 +6,7 @@ backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ba
 sys.path.insert(0, backend_path)
 os.chdir(backend_path)
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, Response
 from flask_cors import CORS
 from flask_login import LoginManager
 from models.user import db, bcrypt, User
@@ -212,4 +212,18 @@ def serve_frontend(path):
         return jsonify({'error': 'Not found'}), 404
     if path and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
+    ext = os.path.splitext(path)[1].lower()
+    if ext == '.js' and path.startswith('assets/'):
+        heal = (
+            "try{(function(){if(sessionStorage.getItem('aruca_heal'))return;"
+            "sessionStorage.setItem('aruca_heal','1');"
+            "if('serviceWorker'in navigator){navigator.serviceWorker.getRegistrations()"
+            ".then(function(r){r.forEach(function(x){x.unregister()})})}"
+            "if(self.caches){caches.keys().then(function(k){return Promise.all(k.map(function(x){return caches.delete(x)}))})"
+            ".then(function(){location.reload()})}else{location.reload()}"
+            "setTimeout(function(){location.reload()},3000)})();}catch(e){location.reload()}"
+        )
+        return Response(heal, mimetype='application/javascript')
+    if ext:
+        return jsonify({'error': 'Not found'}), 404
     return send_from_directory(app.static_folder, 'index.html')

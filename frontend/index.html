@@ -53,6 +53,16 @@
           const splash = document.getElementById('splash');
           if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 500); }
         }, 600);
+        setTimeout(() => {
+          const root = document.getElementById('root');
+          if (root && root.children.length === 0 && !sessionStorage.getItem('aruca_heal')) {
+            sessionStorage.setItem('aruca_heal', '1');
+            navigator.serviceWorker?.getRegistrations?.().then(r => r.forEach(x => x.unregister())).catch(() => {});
+            caches?.keys().then(k => Promise.all(k.map(x => caches.delete(x)))).finally(() => location.reload());
+          } else if (root && root.children.length > 0) {
+            sessionStorage.removeItem('aruca_heal');
+          }
+        }, 5000);
       });
     </script>
   </body>
