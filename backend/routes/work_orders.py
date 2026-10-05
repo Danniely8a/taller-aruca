@@ -469,6 +469,9 @@ COMPROBANTE_HTML = """
   .row .label { color: #666; }
   .row .value { font-weight: bold; text-align: right; }
   .falla-box { background: #fff8e1; border-left: 3px solid #ffc107; padding: 6px 8px; border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.4; margin-bottom: 6px; }
+  .items-list { list-style: none; padding: 0; margin: 0; }
+  .items-list li { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 12px; }
+  .items-list .qty { background: #003A8C; color: white; min-width: 30px; text-align: center; padding: 1px 5px; border-radius: 5px; font-weight: 800; font-size: 11px; }
   .footer { border-top: 1px dashed #ccc; padding-top: 5px; margin-top: auto; text-align: center; }
   .footer p { font-size: 11px; color: #999; }
   .nota { font-size: 10px; color: #666; margin-top: 5px; line-height: 1.4; }
@@ -500,7 +503,7 @@ COMPROBANTE_HTML = """
         {% if order.tipo_servicio == 'Afilado' %}
         <div class="section-title">Servicio de Afilado</div>
         <div class="row"><span class="label">Tipo:</span><span class="value">Afilado</span></div>
-        {% if items_text %}<div class="row"><span class="label">Ítems:</span><span class="value">{{ items_text }}</span></div>{% endif %}
+        {% if items_list %}<div class="row"><span class="label">Ítems:</span><span class="value">{{ items_list|length }} seleccionado{{ 's' if items_list|length != 1 }}</span></div>{% endif %}
         {% else %}
         <div class="section-title">Equipo</div>
         <div class="row"><span class="label">Tipo:</span><span class="value">{{ equip.tipo_equipo }}</span></div>
@@ -526,10 +529,16 @@ COMPROBANTE_HTML = """
       </div>
       {% endif %}
 
-      {% if items_text %}
+      {% if items_list %}
       <div class="section">
         <div class="section-title">Ítems de Afilado</div>
-        <div class="falla-box">{{ items_text }}</div>
+        <div class="falla-box">
+          <ul class="items-list">
+            {% for it in items_list %}
+            <li><span class="qty">{{ it.qty }}x</span> {{ it.nombre }}</li>
+            {% endfor %}
+          </ul>
+        </div>
       </div>
       {% endif %}
     </div>
@@ -559,11 +568,24 @@ def comprobante(id):
     equip = Equipment.query.get(order.equipo_id) if order.equipo_id else None
     from utils import now_ve
     anio = now_ve().year
-    items_text = ''
+    items_list = []
     if order.item_seleccionado:
         try:
-            items = json.loads(order.item_seleccionado)
-            items_text = '\n'.join(f'• {item}' for item in items)
-        except:
-            items_text = order.item_seleccionado
-    return render_template_string(COMPROBANTE_HTML, order=order, client=client, equip=equip, anio=anio, items_text=items_text)
+            raw = json.loads(order.item_seleccionado)
+            if not isinstance(raw, list):
+                raw = [raw]
+            for it in raw:
+                if isinstance(it, dict):
+                    nombre = (it.get('item') or '').strip()
+                    try:
+                        qty = int(it.get('cantidad') or 1)
+                    except (TypeError, ValueError):
+                        qty = 1
+                else:
+                    nombre = str(it).strip()
+                    qty = 1
+                if nombre:
+                    items_list.append({'qty': max(1, qty), 'nombre': nombre})
+        except Exception:
+            items_list = [{'qty': 1, 'nombre': order.item_seleccionado}]
+    return render_template_string(COMPROBANTE_HTML, order=order, client=client, equip=equip, anio=anio, items_list=items_list)
