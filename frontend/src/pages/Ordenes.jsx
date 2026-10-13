@@ -14,6 +14,7 @@ export default function Ordenes() {
   const [equipos, setEquipos] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
+  const [filtroSub, setFiltroSub] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -102,12 +103,15 @@ export default function Ordenes() {
   };
 
   const filtered = ordenes.filter(o => {
+    if (filtroSub && o.equipo?.tipo_equipo !== filtroSub) return false;
     if (busqueda) {
       const q = busqueda.toLowerCase();
       return o.cliente?.nombre?.toLowerCase().includes(q) || o.codigo_corto?.toLowerCase().includes(q);
     }
     return true;
   });
+
+  const SUBCATEGORIAS = ['Pistolas para clavar', 'Engrapadoras'];
 
   return (
     <div ref={containerRef}>
@@ -126,7 +130,7 @@ export default function Ordenes() {
           {[['', 'Todas'], ['Afilado', 'Afilado'], ['Reparación', 'Reparaciones']].map(([val, label]) => (
             <button
               key={val}
-              onClick={() => setFiltroTipo(val)}
+              onClick={() => { setFiltroTipo(val); setFiltroSub(''); }}
               style={{
                 padding: '10px 20px',
                 borderRadius: '10px',
@@ -181,6 +185,37 @@ export default function Ordenes() {
             />
           </div>
         </div>
+        {filtroTipo === 'Reparación' && (
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #E5E7EB' }}>
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Subcategoría:
+            </span>
+            {[['', 'Todas'], ...SUBCATEGORIAS.map(s => [s, s])].map(([val, label]) => (
+              <button
+                key={val || 'todas'}
+                onClick={() => setFiltroSub(val)}
+                style={{
+                  padding: '7px 16px',
+                  borderRadius: '8px',
+                  border: filtroSub === val ? '2px solid #0891B2' : '2px solid #E5E7EB',
+                  background: filtroSub === val ? '#ECFEFF' : 'white',
+                  color: filtroSub === val ? '#0891B2' : '#6B7280',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {val === 'Pistolas para clavar' ? '🔫 ' : val === 'Engrapadoras' ? '📌 ' : ''}{label}
+              </button>
+            ))}
+            {filtroSub && (
+              <span style={{ background: '#0891B2', color: 'white', padding: '3px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700 }}>
+                {filtered.length}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="card">
