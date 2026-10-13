@@ -5,6 +5,9 @@ export default defineConfig({
   plugins: [
     react()
   ],
+  build: {
+    emptyOutDir: false
+  },
   server: {
     port: 3000,
     host: '0.0.0.0',
