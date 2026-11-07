@@ -74,7 +74,11 @@ export default function Layout() {
     .filter(item => !(user?.correo !== 'carlos@gmail.com' && user?.rol === 'Técnico' && item.path === '/pagos'))
     .filter(item => !(user?.rol === 'Pagos' && !MENU_GENESIS.includes(item.path)));
 
-  const mobileNavItems = menuItems.slice(0, MOBILE_NAV_MAX);
+  const reportesItem = menuItems.find(item => item.path === '/reportes');
+  const mobileNavItems = [
+    ...menuItems.filter(item => item.path !== '/reportes').slice(0, MOBILE_NAV_MAX),
+    ...(reportesItem ? [reportesItem] : []),
+  ];
 
   return (
     <div className="app-layout">

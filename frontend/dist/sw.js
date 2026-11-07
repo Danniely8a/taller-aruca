@@ -1,4 +1,4 @@
-const CACHE_NAME = 'taller-aruca-v8';
+const CACHE_NAME = 'taller-aruca-v9';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
