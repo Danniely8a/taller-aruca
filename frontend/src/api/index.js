@@ -104,6 +104,10 @@ export const payments = {
   delete: (paymentId) => api.delete(`/payments/${paymentId}`),
 };
 
+export const reports = {
+  get: (tipo, params) => api.get(`/reports/${tipo}`, { params }),
+};
+
 export const notifications = {
   getAll: () => api.get('/notifications/'),
   markAllRead: () => api.put('/notifications/read-all'),

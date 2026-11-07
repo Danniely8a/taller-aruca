@@ -202,10 +202,11 @@ export default function OrdenDetalle() {
       toast.success('Estado actualizado');
       setShowEstadoModal(false);
       setNuevoEstado('');
-      loadOrden();
-      loadHistorial();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al cambiar estado');
+    } finally {
+      loadOrden();
+      loadHistorial();
     }
   };
 

@@ -13,7 +13,7 @@ from models.user import db, bcrypt, User
 from routes import (
     auth_bp, users_bp, clients_bp, equipments_bp,
     work_orders_bp, photos_bp, status_history_bp, qr_bp, payments_bp, notifications_bp,
-    public_order_bp
+    public_order_bp, reports_bp
 )
 from routes.pagos_semanales import pagos_semanales_bp
 
@@ -74,6 +74,7 @@ app.register_blueprint(payments_bp, url_prefix='/api/payments')
 app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
 app.register_blueprint(public_order_bp, url_prefix='/ver')
 app.register_blueprint(pagos_semanales_bp, url_prefix='/api/pagos-semanales')
+app.register_blueprint(reports_bp, url_prefix='/api/reports')
 
 @app.route('/api/health', methods=['GET'])
 def health():
@@ -131,12 +132,20 @@ try:
                 {'nombre': 'Daniely Ochoa', 'correo': 'daniely@aruca.com', 'rol': 'Recepción / Ventas'},
                 {'nombre': 'Carlos Perez', 'correo': 'carlos@gmail.com', 'rol': 'Técnico'},
                 {'nombre': 'Genesis', 'correo': 'genesis@aruca.com', 'rol': 'Pagos'},
+                {'nombre': 'Sebastián Delgado', 'correo': 'sebastian@aruca.com', 'rol': 'Recepción / Ventas'},
             ]
             for u in usuarios:
                 user = User(nombre=u['nombre'], correo=u['correo'], rol=u['rol'])
                 user.set_password('123456')
                 db.session.add(user)
             db.session.commit()
+
+        if not User.query.filter_by(correo='sebastian@aruca.com').first():
+            sebastian = User(nombre='Sebastián Delgado', correo='sebastian@aruca.com', rol='Recepción / Ventas')
+            sebastian.set_password('123456')
+            db.session.add(sebastian)
+            db.session.commit()
+            print("OK: Usuario Sebastián Delgado creado (contrasena: 123456)")
 except Exception as e:
     import traceback
     print(f"DB Init Error: {e}")
@@ -193,14 +202,19 @@ def seed():
                     {'nombre': 'Daniely Ochoa', 'correo': 'daniely@aruca.com', 'rol': 'Recepción / Ventas'},
                     {'nombre': 'Carlos Perez', 'correo': 'carlos@gmail.com', 'rol': 'Técnico'},
                     {'nombre': 'Genesis', 'correo': 'genesis@aruca.com', 'rol': 'Pagos'},
+                    {'nombre': 'Sebastián Delgado', 'correo': 'sebastian@aruca.com', 'rol': 'Recepción / Ventas'},
                 ]
                 for u in usuarios:
                     user = User(nombre=u['nombre'], correo=u['correo'], rol=u['rol'])
                     user.set_password('123456')
                     db.session.add(user)
                 db.session.commit()
-                return jsonify({'message': 'Seed completo', 'users': User.query.count()})
-            return jsonify({'message': 'Ya existen usuarios', 'users': User.query.count()})
+            if not User.query.filter_by(correo='sebastian@aruca.com').first():
+                sebastian = User(nombre='Sebastián Delgado', correo='sebastian@aruca.com', rol='Recepción / Ventas')
+                sebastian.set_password('123456')
+                db.session.add(sebastian)
+                db.session.commit()
+            return jsonify({'message': 'Seed completo', 'users': User.query.count()})
     except Exception as e:
         import traceback
         return jsonify({'error': str(e), 'trace': traceback.format_exc()})

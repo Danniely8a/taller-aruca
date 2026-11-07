@@ -83,9 +83,10 @@ export default function MisOrdenes() {
     try {
       await workOrders.updateEstado(orderId, { nuevo_estado: nuevoEstado, usuario_id: user.id });
       toast.success(`Estado cambiado a: ${nuevoEstado}`);
-      cargarOrdenes();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al cambiar estado');
+    } finally {
+      cargarOrdenes();
     }
   };
 
@@ -104,9 +105,10 @@ export default function MisOrdenes() {
       setShowEntregaModal(false);
       setEntregaOrderId(null);
       setEntregaNombre('');
-      cargarOrdenes();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al registrar entrega');
+    } finally {
+      cargarOrdenes();
     }
   };
 

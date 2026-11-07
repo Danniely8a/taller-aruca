@@ -1,5 +1,5 @@
 import json
-from flask import Blueprint, request, jsonify, render_template_string
+from flask import Blueprint, request, jsonify, render_template_string, current_app
 from flask_login import current_user
 from models.work_order import WorkOrder, db
 from sqlalchemy import or_, and_
@@ -23,6 +23,24 @@ ESTADOS = [
     'Listo para Entrega', 'Entregado', 'Devolución por Garantía',
     'Afilando (En Proceso)', 'Pagado'
 ]
+
+def notificar_roles(roles, titulo, mensaje, tipo, orden_id):
+    try:
+        from routes.notifications import crear_notificacion
+        usuarios = User.query.filter(User.rol.in_(roles), User.activo == True).all()
+        for usuario in usuarios:
+            crear_notificacion(usuario.id, titulo, mensaje, tipo, orden_id)
+    except Exception:
+        db.session.rollback()
+        current_app.logger.warning('No se pudieron crear las notificaciones', exc_info=True)
+
+def notificar_usuario(usuario_id, titulo, mensaje, tipo, orden_id):
+    try:
+        from routes.notifications import crear_notificacion
+        crear_notificacion(usuario_id, titulo, mensaje, tipo, orden_id)
+    except Exception:
+        db.session.rollback()
+        current_app.logger.warning('No se pudo crear la notificación', exc_info=True)
 
 def generar_numero_ot():
     ultima = WorkOrder.query.order_by(WorkOrder.id.desc()).first()
@@ -188,19 +206,16 @@ def recepcion_completa():
     db.session.add(history)
     db.session.commit()
 
-    from routes.notifications import crear_notificacion
-    tecnicos = User.query.filter_by(rol='Técnico', activo=True).all()
-    for tecnico in tecnicos:
-        crear_notificacion(
-            tecnico.id,
-            'Nueva orden de trabajo',
-            f'Se creó la orden {order.numero_ot} ({order.codigo_corto}) - {equip.tipo_equipo} {equip.marca}',
-            'orden_creada',
-            order.id
-        )
+    notificar_roles(
+        ['Técnico'],
+        'Nueva orden de trabajo',
+        f'Se creó la orden {order.numero_ot} ({order.codigo_corto}) - {equip.tipo_equipo} {equip.marca}',
+        'orden_creada',
+        order.id
+    )
 
     if tecnico_asignado_id:
-        crear_notificacion(
+        notificar_usuario(
             tecnico_asignado_id,
             'Nueva orden de Afilado',
             f'Se te asignó la orden {order.numero_ot} ({order.codigo_corto}) - Afilado',
@@ -288,34 +303,22 @@ def update_estado(id):
     db.session.commit()
 
     if nuevo_estado in ('Listo para Entrega', 'Entregado'):
-        from routes.notifications import crear_notificacion
-        usuarios_notificar = User.query.filter(
-            User.rol.in_(['Recepción / Ventas', 'Supervisor', 'Gerente General']),
-            User.activo == True
-        ).all()
-        for u in usuarios_notificar:
-            crear_notificacion(
-                u.id,
-                f'Orden {nuevo_estado}',
-                f'La orden {order.numero_ot} ({order.codigo_corto}) está "{nuevo_estado}"',
-                'reparacion_finalizada',
-                order.id
-            )
+        notificar_roles(
+            ['Recepción / Ventas', 'Supervisor', 'Gerente General'],
+            f'Orden {nuevo_estado}',
+            f'La orden {order.numero_ot} ({order.codigo_corto}) está "{nuevo_estado}"',
+            'reparacion_finalizada',
+            order.id
+        )
 
     if nuevo_estado in ('En Diagnóstico', 'Esperando Presupuesto'):
-        from routes.notifications import crear_notificacion
-        usuarios_notificar = User.query.filter(
-            User.rol.in_(['Recepción / Ventas', 'Supervisor']),
-            User.activo == True
-        ).all()
-        for u in usuarios_notificar:
-            crear_notificacion(
-                u.id,
-                f'Actualización: {nuevo_estado}',
-                f'La orden {order.numero_ot} ({order.codigo_corto}) pasó a "{nuevo_estado}"',
-                'actualizacion_orden',
-                order.id
-            )
+        notificar_roles(
+            ['Recepción / Ventas', 'Supervisor'],
+            f'Actualización: {nuevo_estado}',
+            f'La orden {order.numero_ot} ({order.codigo_corto}) pasó a "{nuevo_estado}"',
+            'actualizacion_orden',
+            order.id
+        )
 
     return jsonify(order.to_dict())
 
@@ -327,6 +330,7 @@ def update_items_listos(id):
     items_listos = data.get('items_listos', [])
     order.items_listos = json.dumps(items_listos)
 
+    cambio_a_listo = False
     items_totales = json.loads(order.item_seleccionado) if order.item_seleccionado else []
     if items_totales and len(items_listos) == len(items_totales) and order.estado != 'Listo para Entrega':
         estado_anterior = order.estado
@@ -338,22 +342,19 @@ def update_items_listos(id):
             usuario_id=data.get('usuario_id', current_user.id)
         )
         db.session.add(history)
-
-        from routes.notifications import crear_notificacion
-        usuarios_notificar = User.query.filter(
-            User.rol.in_(['Recepción / Ventas', 'Supervisor', 'Gerente General']),
-            User.activo == True
-        ).all()
-        for u in usuarios_notificar:
-            crear_notificacion(
-                u.id,
-                'Orden Lista para Entrega',
-                f'La orden {order.numero_ot} ({order.codigo_corto}) tiene todos los items listos',
-                'reparacion_finalizada',
-                order.id
-            )
+        cambio_a_listo = True
 
     db.session.commit()
+
+    if cambio_a_listo:
+        notificar_roles(
+            ['Recepción / Ventas', 'Supervisor', 'Gerente General'],
+            'Orden Lista para Entrega',
+            f'La orden {order.numero_ot} ({order.codigo_corto}) tiene todos los items listos',
+            'reparacion_finalizada',
+            order.id
+        )
+
     return jsonify(order.to_dict())
 
 @work_orders_bp.route('/<int:id>/items-validados', methods=['PUT'])

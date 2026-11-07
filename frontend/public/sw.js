@@ -1,4 +1,4 @@
-const CACHE_NAME = 'taller-aruca-v7';
+const CACHE_NAME = 'taller-aruca-v8';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
@@ -36,7 +36,7 @@ self.addEventListener('fetch', (event) => {
         .catch(async () => {
           const cached = await caches.match('/index.html');
           if (cached) return cached;
-          return new Response('Sin conexión', {
+          return new Response('Sin conexiÃ³n', {
             status: 503,
             headers: { 'Content-Type': 'text/plain; charset=utf-8' },
           });

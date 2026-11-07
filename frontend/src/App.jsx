@@ -13,6 +13,7 @@ import OrdenDetalle from './pages/OrdenDetalle';
 import Escaner from './pages/Escaner';
 import MisOrdenes from './pages/MisOrdenes';
 import PagosPage from './pages/PagosPage';
+import Reportes from './pages/Reportes';
 import GenesisPage from './pages/GenesisPage';
 import CambiarContrasena from './pages/CambiarContrasena';
 import ForgotPassword from './pages/ForgotPassword';
@@ -67,6 +68,7 @@ function AppRoutes() {
         <Route path="mis-ordenes" element={<MisOrdenes />} />
         <Route path="escaner" element={esCarlos ? <Navigate to="/mis-ordenes" /> : <Escaner />} />
         <Route path="pagos" element={esCarlos ? <Navigate to="/mis-ordenes" /> : <PagosPage />} />
+        <Route path="reportes" element={<Reportes />} />
         <Route path="genesis" element={<GenesisPage />} />
         <Route path="cambiar-contrasena" element={<CambiarContrasena />} />
       </Route>

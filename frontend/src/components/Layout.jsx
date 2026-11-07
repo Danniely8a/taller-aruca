@@ -26,20 +26,24 @@ const EXTRAS_MENU = {
     { path: '/equipos', label: 'Equipos', icon: '🔧' },
     { path: '/genesis', label: 'Producción', icon: '🏭' },
     { path: '/pagos', label: 'Pagos', icon: '💰' },
+    { path: '/reportes', label: 'Reportes', icon: '📈' },
   ],
   'Supervisor': [
     { path: '/clientes', label: 'Clientes', icon: '👤' },
     { path: '/equipos', label: 'Equipos', icon: '🔧' },
     { path: '/genesis', label: 'Producción', icon: '🏭' },
     { path: '/pagos', label: 'Pagos', icon: '💰' },
+    { path: '/reportes', label: 'Reportes', icon: '📈' },
   ],
   'Técnico': [
     { path: '/pagos', label: 'Pagos', icon: '💰' },
+    { path: '/reportes', label: 'Reportes', icon: '📈' },
   ],
   'Recepción / Ventas': [
     { path: '/clientes', label: 'Clientes', icon: '👤' },
     { path: '/equipos', label: 'Equipos', icon: '🔧' },
     { path: '/genesis', label: 'Producción', icon: '🏭' },
+    { path: '/reportes', label: 'Reportes', icon: '📈' },
   ],
   'Pagos': [
     { path: '/genesis', label: 'Órdenes e Ítems', icon: '📋' },
