@@ -30,9 +30,13 @@ def role_required(*roles):
 def login():
     data = request.get_json()
     user = User.query.filter_by(correo=data.get('correo')).first()
-    if user and user.check_password(data.get('contrasena')) and user.activo:
-        login_user(user)
-        return jsonify({'user': user.to_dict(), 'message': 'Sesión iniciada correctamente'})
+    if user and user.activo:
+        try:
+            if user.check_password(data.get('contrasena')):
+                login_user(user)
+                return jsonify({'user': user.to_dict(), 'message': 'Sesión iniciada correctamente'})
+        except Exception:
+            pass
     return jsonify({'error': 'Credenciales inválidas o usuario inactivo'}), 401
 
 @auth_bp.route('/logout', methods=['POST'])

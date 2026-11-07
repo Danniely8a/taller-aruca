@@ -140,12 +140,28 @@ try:
                 db.session.add(user)
             db.session.commit()
 
-        if not User.query.filter_by(correo='sebastian@aruca.com').first():
+        sebastian = User.query.filter_by(correo='sebastian@aruca.com').first()
+        if not sebastian:
             sebastian = User(nombre='Sebastián Delgado', correo='sebastian@aruca.com', rol='Recepción / Ventas')
             sebastian.set_password('123456')
             db.session.add(sebastian)
             db.session.commit()
             print("OK: Usuario Sebastián Delgado creado (contrasena: 123456)")
+        else:
+            cambios = False
+            if sebastian.nombre != 'Sebastián Delgado':
+                sebastian.nombre = 'Sebastián Delgado'
+                cambios = True
+            if sebastian.rol != 'Recepción / Ventas':
+                sebastian.rol = 'Recepción / Ventas'
+                cambios = True
+            hash_actual = sebastian.contrasena or ''
+            if not hash_actual.startswith(('$2a$', '$2b$', '$2y$')):
+                sebastian.set_password('123456')
+                cambios = True
+            if cambios:
+                db.session.commit()
+                print("OK: Usuario Sebastián Delgado reparado")
 except Exception as e:
     import traceback
     print(f"DB Init Error: {e}")
@@ -209,11 +225,26 @@ def seed():
                     user.set_password('123456')
                     db.session.add(user)
                 db.session.commit()
-            if not User.query.filter_by(correo='sebastian@aruca.com').first():
+            sebastian = User.query.filter_by(correo='sebastian@aruca.com').first()
+            if not sebastian:
                 sebastian = User(nombre='Sebastián Delgado', correo='sebastian@aruca.com', rol='Recepción / Ventas')
                 sebastian.set_password('123456')
                 db.session.add(sebastian)
                 db.session.commit()
+            else:
+                cambios = False
+                if sebastian.nombre != 'Sebastián Delgado':
+                    sebastian.nombre = 'Sebastián Delgado'
+                    cambios = True
+                if sebastian.rol != 'Recepción / Ventas':
+                    sebastian.rol = 'Recepción / Ventas'
+                    cambios = True
+                hash_actual = sebastian.contrasena or ''
+                if not hash_actual.startswith(('$2a$', '$2b$', '$2y$')):
+                    sebastian.set_password('123456')
+                    cambios = True
+                if cambios:
+                    db.session.commit()
             return jsonify({'message': 'Seed completo', 'users': User.query.count()})
     except Exception as e:
         import traceback

@@ -87,12 +87,28 @@ def seed_initial_data():
             db.session.add(user)
         db.session.commit()
         print("OK: Usuarios iniciales creados (contrasena: 123456)")
-    elif not User.query.filter_by(correo='sebastian@aruca.com').first():
-        user = User(nombre='Sebastián Delgado', correo='sebastian@aruca.com', rol='Recepción / Ventas')
-        user.set_password('123456')
-        db.session.add(user)
-        db.session.commit()
-        print("OK: Usuario Sebastián Delgado creado (contrasena: 123456)")
+    else:
+        user = User.query.filter_by(correo='sebastian@aruca.com').first()
+        if not user:
+            user = User(nombre='Sebastián Delgado', correo='sebastian@aruca.com', rol='Recepción / Ventas')
+            user.set_password('123456')
+            db.session.add(user)
+            db.session.commit()
+            print("OK: Usuario Sebastián Delgado creado (contrasena: 123456)")
+        else:
+            cambios = False
+            if user.nombre != 'Sebastián Delgado':
+                user.nombre = 'Sebastián Delgado'
+                cambios = True
+            if user.rol != 'Recepción / Ventas':
+                user.rol = 'Recepción / Ventas'
+                cambios = True
+            if not (user.contrasena or '').startswith(('$2a$', '$2b$', '$2y$')):
+                user.set_password('123456')
+                cambios = True
+            if cambios:
+                db.session.commit()
+                print("OK: Usuario Sebastián Delgado reparado")
 
 if __name__ == '__main__':
     with app.app_context():
